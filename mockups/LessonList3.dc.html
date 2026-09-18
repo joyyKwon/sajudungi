@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: oklch(96% 0.018 80);
+      --bg-card: oklch(99% 0.01 80);
+      --indigo-soft: oklch(90% 0.03 265);
+      --ink: oklch(24% 0.025 265);
+      --ink-soft: oklch(48% 0.02 265);
+      --indigo: oklch(35% 0.09 265);
+      --gold: oklch(74% 0.13 78);
+      --gold-deep: oklch(52% 0.12 70);
+      --line: oklch(90% 0.015 80);
+      --white: oklch(99% 0.005 80);
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;}
+    .screen{
+      width:390px; height:844px; background:var(--bg); overflow:hidden;
+      font-family:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif; color:var(--ink);
+      display:flex; flex-direction:column;
+    }
+    h2{font-family:'Gowun Batang','Noto Serif KR',serif; margin:0; font-weight:700;}
+    .content{flex:1; overflow:auto; padding:10px 20px 24px; display:flex; flex-direction:column; gap:16px;}
+    .tabs{display:flex; gap:8px;}
+    .tab-pill{padding:9px 16px; border-radius:999px; font-size:13px; font-weight:700; background:var(--white); border:1px solid var(--line); color:var(--ink-soft);}
+    .tab-pill.active{background:var(--indigo); color:var(--white); border-color:var(--indigo);}
+    .lesson-row{display:flex; align-items:center; gap:14px; padding:14px; background:var(--bg-card); border:1px solid var(--line); border-radius:16px;}
+    .num{width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0;}
+  </style>
+</helmet>
+
+<div class="screen">
+  <div style="padding:20px 20px 8px;">
+    <h2 style="font-size:20px;">사주 공부</h2>
+  </div>
+
+  <div class="content" style="gap:14px;">
+    <div style="display:flex; align-items:center; gap:12px; background:var(--indigo-soft); border-radius:16px; padding:14px 16px;">
+      <img src="mascot_studying.png" alt="사주둥이" style="width:60px; height:auto; flex-shrink:0;"/>
+      <div style="flex:1;">
+        <p style="font-size:13px; font-weight:700; color:var(--indigo);">오늘도 한 걸음, 함께 배워볼까?</p>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <div style="flex:1; height:6px; background:var(--white); border-radius:999px; overflow:hidden;">
+            <div style="width:30%; height:100%; background:var(--gold);"></div>
+          </div>
+          <span style="font-size:11px; color:var(--indigo); font-weight:700;">12/40</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-pill active">입문</div>
+      <div class="tab-pill">초급</div>
+      <div class="tab-pill">중급</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="lesson-row">
+        <div class="num" style="background:var(--gold); color:var(--ink);">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M5 13l4 4 10-10" stroke="#2b2411" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:14.5px; font-weight:700;">1강 · 사주란 무엇일까?</p>
+          <p style="font-size:12px; color:var(--ink-soft); margin-top:2px;">사주팔자의 기본 개념 이해하기</p>
+        </div>
+      </div>
+      <div class="lesson-row">
+        <div class="num" style="background:var(--gold); color:var(--ink);">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M5 13l4 4 10-10" stroke="#2b2411" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:14.5px; font-weight:700;">2강 · 천간, 하늘의 기운</p>
+          <p style="font-size:12px; color:var(--ink-soft); margin-top:2px;">갑을병정무기경신임계</p>
+        </div>
+      </div>
+      <div class="lesson-row" style="border-color:var(--indigo); box-shadow:0 0 0 2px var(--indigo-soft);">
+        <div class="num" style="background:var(--indigo); color:var(--white); font-size:14px;">3</div>
+        <div style="flex:1;">
+          <p style="font-size:14.5px; font-weight:700;">3강 · 지지, 땅의 기운</p>
+          <p style="font-size:12px; color:var(--ink-soft); margin-top:2px;">자축인묘진사오미신유술해</p>
+        </div>
+        <span style="font-size:11px; color:var(--indigo); font-weight:700;">진행중</span>
+      </div>
+      <div class="lesson-row" style="opacity:.55;">
+        <div class="num" style="background:oklch(93% 0.008 80); color:var(--ink-soft);">
+          <svg width="14" height="14" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#8a8fa8" stroke-width="1.6" fill="none"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#8a8fa8" stroke-width="1.6" fill="none"/></svg>
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:14.5px; font-weight:700;">4강 · 오행: 목화토금수</p>
+          <p style="font-size:12px; color:var(--ink-soft); margin-top:2px;">다섯 가지 기운의 상생상극</p>
+        </div>
+      </div>
+      <div class="lesson-row" style="opacity:.55;">
+        <div class="num" style="background:oklch(93% 0.008 80); color:var(--ink-soft);">
+          <svg width="14" height="14" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#8a8fa8" stroke-width="1.6" fill="none"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#8a8fa8" stroke-width="1.6" fill="none"/></svg>
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:14.5px; font-weight:700;">5강 · 나의 일간 찾기</p>
+          <p style="font-size:12px; color:var(--ink-soft); margin-top:2px;">내 사주에서 일간 읽는 법</p>
+        </div>
+      </div>
+      <div class="lesson-row" style="opacity:.55;">
+        <div class="num" style="background:oklch(93% 0.008 80); color:var(--ink-soft);">
+          <svg width="14" height="14" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#8a8fa8" stroke-width="1.6" fill="none"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#8a8fa8" stroke-width="1.6" fill="none"/></svg>
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:14.5px; font-weight:700;">6강 · 십신이란?</p>
+          <p style="font-size:12px; color:var(--ink-soft); margin-top:2px;">사주 해석의 핵심 열쇠</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

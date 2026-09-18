@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: oklch(96% 0.018 80);
+      --indigo-soft: oklch(90% 0.03 265);
+      --ink: oklch(24% 0.025 265);
+      --ink-soft: oklch(48% 0.02 265);
+      --indigo: oklch(35% 0.09 265);
+      --gold: oklch(74% 0.13 78);
+      --line: oklch(90% 0.015 80);
+      --white: oklch(99% 0.005 80);
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;}
+    .screen{
+      width:390px; height:844px; background:var(--indigo-soft); overflow:hidden; position:relative;
+      font-family:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif; color:var(--ink);
+      display:flex; flex-direction:column; padding:16px 20px 28px;
+    }
+    h1{font-family:'Gowun Batang','Noto Serif KR',serif; margin:0; font-weight:700;}
+    .segbar{display:flex; gap:5px;}
+    .seg{flex:1; height:4px; border-radius:2px; background:oklch(35% 0.09 265 / .18);}
+    .seg.done{background:var(--indigo);}
+    .chip{padding:8px 12px; border-radius:10px; background:var(--white); font-family:'Gowun Batang',serif; font-size:16px; font-weight:700; color:var(--indigo); text-align:center;}
+  </style>
+</helmet>
+
+<div class="screen">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <div class="segbar" style="flex:1;">
+      <div class="seg done"></div><div class="seg done"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div>
+    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#4a4f72" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </div>
+
+  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; text-align:center;">
+    <svg width="150" height="150" viewBox="0 0 120 120">
+      <ellipse cx="60" cy="34" rx="34" ry="8" fill="#2b2f52"/>
+      <path d="M40 34 Q60 4 80 34 Q60 23 40 34 Z" fill="#363b66"/>
+      <circle cx="60" cy="16" r="3.4" fill="#d8a747"/>
+      <circle cx="60" cy="68" r="43" fill="#fff8ec" stroke="#2b2f52" stroke-width="3"/>
+      <ellipse cx="37" cy="75" rx="7.5" ry="5.2" fill="#e8a583" opacity="0.75"/>
+      <ellipse cx="83" cy="75" rx="7.5" ry="5.2" fill="#e8a583" opacity="0.75"/>
+      <circle cx="45.5" cy="64" r="4.2" fill="#2b2f52"/>
+      <circle cx="74.5" cy="64" r="4.2" fill="#2b2f52"/>
+      <path d="M49 78 Q60 87 71 78" stroke="#2b2f52" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+      <rect x="30" y="96" width="60" height="10" rx="3" fill="#d8a747" opacity=".85"/>
+    </svg>
+
+    <div>
+      <h1 style="font-size:26px; color:var(--indigo);">천간이 뭐예요?</h1>
+      <p style="font-size:14.5px; color:var(--ink-soft); margin-top:14px; line-height:1.7; padding:0 8px;">
+        하늘의 기운을 나타내는 10개의 글자예요.<br/>
+        마치 알파벳처럼 순서가 있고, 이 순서대로<br/>
+        내 사주의 각 기둥에 하나씩 들어가요.
+      </p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:8px; width:100%; padding:0 4px;">
+      <div class="chip">甲</div><div class="chip">乙</div><div class="chip">丙</div><div class="chip">丁</div><div class="chip">戊</div>
+      <div class="chip">己</div><div class="chip">庚</div><div class="chip">辛</div><div class="chip">壬</div><div class="chip">癸</div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div style="background:var(--gold); color:var(--ink); border-radius:16px; height:54px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700;">다음</div>
+    <p style="text-align:center; font-size:12.5px; color:var(--ink-soft);">건너뛰기</p>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

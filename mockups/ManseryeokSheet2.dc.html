@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: oklch(97% 0.02 75);
+      --ink: oklch(28% 0.05 40);
+      --ink-soft: oklch(50% 0.035 45);
+      --red: oklch(54% 0.17 35);
+      --line: oklch(90% 0.02 70);
+      --white: oklch(99% 0.006 75);
+      --wood: oklch(62% 0.11 150);
+      --water: oklch(45% 0.08 250);
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;}
+    .screen{width:390px; height:844px; background:var(--bg); overflow:hidden; position:relative; font-family:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif; color:var(--ink);}
+    h2,h3{font-family:'Gowun Batang','Noto Serif KR',serif; margin:0; font-weight:700;}
+    .topbar{display:flex; align-items:center; justify-content:space-between; padding:20px 20px 8px;}
+    .ganji-cell{flex:1; text-align:center; padding:14px 4px; border-radius:14px; background:var(--white); border:1.5px solid var(--line); display:flex; flex-direction:column; gap:8px;}
+    .glyph{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Gowun Batang',serif; font-size:18px; font-weight:700; margin:0 auto;}
+    .overlay{position:absolute; inset:0; background:oklch(30% 0.05 40 / .45);}
+    .sheet{position:absolute; left:0; right:0; bottom:0; background:var(--white); border-radius:24px 24px 0 0; padding:10px 20px 32px; box-shadow:0 -8px 30px oklch(30% 0.05 40 / .2); display:flex; flex-direction:column; gap:14px;}
+    .handle{width:38px; height:4px; border-radius:2px; background:var(--line); margin:2px auto 4px;}
+    .seg{display:flex; background:var(--bg); border-radius:12px; padding:4px; gap:4px;}
+    .seg-item{flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:9px; font-size:13px; font-weight:700; color:var(--ink-soft);}
+    .seg-item.active{background:var(--white); color:var(--red); box-shadow:0 1px 4px oklch(30% 0.05 40 / .12);}
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="topbar">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="#3a2415" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h2 style="font-size:18px;">만세력</h2>
+    </div>
+  </div>
+
+  <div style="padding:10px 20px;">
+    <div style="display:flex; gap:8px;">
+      <div class="ganji-cell"><p style="font-size:11px; color:var(--ink-soft);">년주</p><div class="glyph" style="color:#c24b1f;">丙</div><div class="glyph" style="color:var(--water);">子</div></div>
+      <div class="ganji-cell"><p style="font-size:11px; color:var(--ink-soft);">월주</p><div class="glyph" style="color:#7a7a7a;">辛</div><div class="glyph" style="color:var(--wood);">卯</div></div>
+      <div class="ganji-cell" style="border-color:var(--red); box-shadow:0 0 0 3px oklch(93% 0.045 40);"><p style="font-size:11px; color:var(--red); font-weight:700;">일주</p><div class="glyph" style="color:var(--wood);">甲</div><div class="glyph" style="color:var(--water);">子</div></div>
+      <div class="ganji-cell"><p style="font-size:11px; color:var(--ink-soft);">시주</p><div class="glyph" style="color:#7a7a7a;">庚</div><div class="glyph" style="color:#c24b1f;">午</div></div>
+    </div>
+  </div>
+
+  <div class="overlay"></div>
+
+  <div class="sheet">
+    <div class="handle"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <p style="font-size:12px; color:var(--ink-soft);">일주</p>
+        <h3 style="font-size:19px; color:var(--red); margin-top:2px;">갑자 (甲子)</h3>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#a89a86" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+
+    <div class="seg">
+      <div class="seg-item active">
+        <svg width="15" height="15" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19 19l-4.5-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        계산근거
+      </div>
+      <div class="seg-item">
+        <svg width="15" height="15" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.4.9 1 .9 1.8h4.2c0-.8.3-1.4.9-1.8A6 6 0 0 0 12 3z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        해석
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; background:var(--bg); border-radius:16px; padding:14px;">
+      <img src="mascot_analyzing.png" alt="사주둥이" style="width:56px; height:auto; flex-shrink:0;"/>
+      <p style="font-size:13.5px; line-height:1.65; color:var(--ink);">일주는 태어난 <b>'날'</b>의 간지야. 서연님은 1996년 3월 14일에 태어났으니, 그날의 일진을 만세력에서 찾아보면 <b style="color:var(--red);">갑자(甲子)</b>가 나와!</p>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:oklch(93% 0.045 40 / .5); border-radius:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" stroke="var(--red)" stroke-width="1.6" fill="none"/><path d="M4 9h16M8 3v4M16 3v4" stroke="var(--red)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span style="font-size:12px; color:var(--red);">1996.03.14 → 일진표 조회 → 갑자(甲子)</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px;">
+      <span style="font-size:13px; color:var(--red); font-weight:700;">다음: 해석 보기</span>
+      <svg width="15" height="15" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="var(--red)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "artboards": [
+    { "file": "Onboarding3.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "온보딩/로그인" },
+    { "file": "InfoInput3.dc.html", "x": 490, "y": 0, "w": 390, "h": 844, "title": "정보입력" },
+    { "file": "Main3.dc.html", "x": 980, "y": 0, "w": 390, "h": 844, "title": "홈" },
+    { "file": "SajuResult3.dc.html", "x": 1470, "y": 0, "w": 390, "h": 844, "title": "사주풀이 결과" },
+    { "file": "Manseryeok.dc.html", "x": 0, "y": 994, "w": 390, "h": 844, "title": "만세력" },
+    { "file": "ManseryeokSheet3.dc.html", "x": 490, "y": 994, "w": 390, "h": 844, "title": "만세력 - 탭 설명" },
+    { "file": "LessonList3.dc.html", "x": 980, "y": 994, "w": 390, "h": 844, "title": "사주공부 목록" },
+    { "file": "LessonDetail3.dc.html", "x": 1470, "y": 994, "w": 390, "h": 844, "title": "레슨 상세" }
+  ],
+  "annotations": [
+    { "id": "note-flow-1", "x": 0, "y": -80, "w": 900, "text": "온보딩 → 정보입력 → 홈  (1번 팔레트 + 실제 캐릭터)" },
+    { "id": "note-flow-2", "x": 0, "y": 914, "w": 900, "text": "만세력 탭 → 바텀시트(계산근거/해석)  |  사주공부 목록 → 레슨 상세(카드뉴스)" }
+  ],
+  "launch": { "view": "canvas" }
+}

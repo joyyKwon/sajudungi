@@ -1,0 +1,32 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "옵션 1 · 기본" },
+    { "id": "page-2", "name": "옵션 2 · 실제 캐릭터" }
+  ],
+  "artboards": [
+    { "file": "Onboarding.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "온보딩/로그인", "page": "page-1" },
+    { "file": "InfoInput.dc.html", "x": 490, "y": 0, "w": 390, "h": 844, "title": "정보입력", "page": "page-1" },
+    { "file": "Main.dc.html", "x": 980, "y": 0, "w": 390, "h": 844, "title": "홈", "page": "page-1" },
+    { "file": "SajuResult.dc.html", "x": 1470, "y": 0, "w": 390, "h": 844, "title": "사주풀이 결과", "page": "page-1" },
+    { "file": "Manseryeok.dc.html", "x": 0, "y": 994, "w": 390, "h": 844, "title": "만세력", "page": "page-1" },
+    { "file": "ManseryeokSheet.dc.html", "x": 490, "y": 994, "w": 390, "h": 844, "title": "만세력 - 탭 설명", "page": "page-1" },
+    { "file": "LessonList.dc.html", "x": 980, "y": 994, "w": 390, "h": 844, "title": "사주공부 목록", "page": "page-1" },
+    { "file": "LessonDetail.dc.html", "x": 1470, "y": 994, "w": 390, "h": 844, "title": "레슨 상세", "page": "page-1" },
+
+    { "file": "Onboarding2.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "온보딩/로그인", "page": "page-2" },
+    { "file": "InfoInput2.dc.html", "x": 490, "y": 0, "w": 390, "h": 844, "title": "정보입력", "page": "page-2" },
+    { "file": "Main2.dc.html", "x": 980, "y": 0, "w": 390, "h": 844, "title": "홈", "page": "page-2" },
+    { "file": "SajuResult2.dc.html", "x": 1470, "y": 0, "w": 390, "h": 844, "title": "사주풀이 결과", "page": "page-2" },
+    { "file": "Manseryeok2.dc.html", "x": 0, "y": 994, "w": 390, "h": 844, "title": "만세력", "page": "page-2" },
+    { "file": "ManseryeokSheet2.dc.html", "x": 490, "y": 994, "w": 390, "h": 844, "title": "만세력 - 탭 설명", "page": "page-2" },
+    { "file": "LessonList2.dc.html", "x": 980, "y": 994, "w": 390, "h": 844, "title": "사주공부 목록", "page": "page-2" },
+    { "file": "LessonDetail2.dc.html", "x": 1470, "y": 994, "w": 390, "h": 844, "title": "레슨 상세", "page": "page-2" }
+  ],
+  "annotations": [
+    { "id": "note-flow-1", "x": 0, "y": -80, "w": 900, "text": "온보딩 → 정보입력 → 홈", "page": "page-1" },
+    { "id": "note-flow-2", "x": 0, "y": 914, "w": 900, "text": "만세력 탭 → 바텀시트(계산근거/해석)  |  사주공부 목록 → 레슨 상세(카드뉴스)", "page": "page-1" },
+    { "id": "note-flow-3", "x": 0, "y": -80, "w": 900, "text": "온보딩 → 정보입력 → 홈  (실제 사주둥이 캐릭터 적용)", "page": "page-2" },
+    { "id": "note-flow-4", "x": 0, "y": 914, "w": 900, "text": "만세력 탭 → 바텀시트(계산근거/해석)  |  사주공부 목록 → 레슨 상세(카드뉴스)", "page": "page-2" }
+  ],
+  "launch": { "view": "canvas", "page": "page-2" }
+}

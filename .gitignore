@@ -37,6 +37,11 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# design canvas: seeded editor bundles are regenerable build output (~2.5MB each),
+# keep only the .dc.html source + canvas.json in mockups/
+mockups/*.html
+!mockups/*.dc.html
+
 # generated native folders
 /ios
 /android

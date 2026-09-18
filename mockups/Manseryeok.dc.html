@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: oklch(96% 0.018 80);
+      --bg-card: oklch(99% 0.01 80);
+      --indigo-soft: oklch(90% 0.03 265);
+      --ink: oklch(24% 0.025 265);
+      --ink-soft: oklch(48% 0.02 265);
+      --indigo: oklch(35% 0.09 265);
+      --gold: oklch(74% 0.13 78);
+      --gold-deep: oklch(52% 0.12 70);
+      --line: oklch(90% 0.015 80);
+      --white: oklch(99% 0.005 80);
+      --wood: oklch(62% 0.11 150);
+      --fire: oklch(60% 0.16 25);
+      --earth: oklch(66% 0.1 85);
+      --metal: oklch(75% 0.01 85);
+      --water: oklch(38% 0.06 255);
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;}
+    .screen{
+      width:390px; height:844px; background:var(--bg); overflow:hidden;
+      font-family:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif; color:var(--ink);
+      display:flex; flex-direction:column;
+    }
+    h1,h2,h3{font-family:'Gowun Batang','Noto Serif KR',serif; margin:0; font-weight:700;}
+    .topbar{display:flex; align-items:center; justify-content:space-between; padding:20px 20px 8px;}
+    .content{flex:1; overflow:auto; padding:10px 20px 24px; display:flex; flex-direction:column; gap:18px;}
+    .hint{display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--indigo); background:var(--indigo-soft); padding:7px 12px; border-radius:999px; align-self:flex-start;}
+    .ganji-cell{
+      flex:1; text-align:center; padding:14px 4px; border-radius:14px; background:var(--white);
+      border:1.5px solid var(--line); display:flex; flex-direction:column; gap:8px;
+    }
+    .glyph{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Gowun Batang',serif; font-size:18px; font-weight:700; margin:0 auto;}
+    .cycle-chip{min-width:56px; text-align:center; padding:10px 6px; border-radius:12px; background:var(--white); border:1px solid var(--line); flex-shrink:0;}
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="topbar">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="#242a4d" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h2 style="font-size:18px;">만세력</h2>
+    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="#4a4f72" stroke-width="1.7" fill="none"/><path d="M12 8h.01M11 11h1v6h1" stroke="#4a4f72" stroke-width="1.7" stroke-linecap="round"/></svg>
+  </div>
+
+  <div class="content">
+    <div class="hint">
+      <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19 19l-4.5-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      표를 눌러서 자세히 알아보세요
+    </div>
+
+    <div>
+      <p style="font-size:12px; color:var(--ink-soft); font-weight:700; margin-bottom:10px;">사주 원국 · 1996년 3월 14일 오후 3:30</p>
+      <div style="display:flex; gap:8px;">
+        <div class="ganji-cell">
+          <p style="font-size:11px; color:var(--ink-soft);">년주</p>
+          <div class="glyph" style="background:oklch(88% 0.13 25 / .25); color:var(--fire);">丙</div>
+          <div class="glyph" style="background:oklch(90% 0.06 255 / .3); color:var(--water);">子</div>
+          <p style="font-size:10.5px; color:var(--ink-soft);">병자</p>
+        </div>
+        <div class="ganji-cell">
+          <p style="font-size:11px; color:var(--ink-soft);">월주</p>
+          <div class="glyph" style="background:oklch(88% 0.02 85 / .5); color:#7a7a7a;">辛</div>
+          <div class="glyph" style="background:oklch(88% 0.09 150 / .3); color:var(--wood);">卯</div>
+          <p style="font-size:10.5px; color:var(--ink-soft);">신묘</p>
+        </div>
+        <div class="ganji-cell" style="border-color:var(--indigo); box-shadow:0 0 0 3px oklch(90% 0.03 265);">
+          <p style="font-size:11px; color:var(--indigo); font-weight:700;">일주</p>
+          <div class="glyph" style="background:oklch(88% 0.09 150 / .3); color:var(--wood);">甲</div>
+          <div class="glyph" style="background:oklch(90% 0.06 255 / .3); color:var(--water);">子</div>
+          <p style="font-size:10.5px; color:var(--indigo); font-weight:700;">갑자</p>
+        </div>
+        <div class="ganji-cell">
+          <p style="font-size:11px; color:var(--ink-soft);">시주</p>
+          <div class="glyph" style="background:oklch(88% 0.02 85 / .5); color:#7a7a7a;">庚</div>
+          <div class="glyph" style="background:oklch(88% 0.13 25 / .25); color:var(--fire);">午</div>
+          <p style="font-size:10.5px; color:var(--ink-soft);">경오</p>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+        <span style="font-size:11px; color:var(--ink-soft); display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--wood);display:inline-block;"></span>목</span>
+        <span style="font-size:11px; color:var(--ink-soft); display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--fire);display:inline-block;"></span>화</span>
+        <span style="font-size:11px; color:var(--ink-soft); display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--earth);display:inline-block;"></span>토</span>
+        <span style="font-size:11px; color:var(--ink-soft); display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:#9a9a9a;display:inline-block;"></span>금</span>
+        <span style="font-size:11px; color:var(--ink-soft); display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--water);display:inline-block;"></span>수</span>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; color:var(--ink-soft); font-weight:700; margin-bottom:10px;">대운 (10년 단위)</p>
+      <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+        <div class="cycle-chip"><p style="font-size:11px; color:var(--ink-soft);">3세</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">壬寅</p></div>
+        <div class="cycle-chip"><p style="font-size:11px; color:var(--ink-soft);">13세</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">癸卯</p></div>
+        <div class="cycle-chip" style="background:var(--indigo); border-color:var(--indigo);"><p style="font-size:11px; color:oklch(85% 0.03 265);">23세</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px; color:var(--white);">甲辰</p></div>
+        <div class="cycle-chip"><p style="font-size:11px; color:var(--ink-soft);">33세</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">乙巳</p></div>
+        <div class="cycle-chip"><p style="font-size:11px; color:var(--ink-soft);">43세</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">丙午</p></div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px; color:var(--ink-soft); font-weight:700; margin-bottom:10px;">세운 (연 단위)</p>
+      <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+        <div class="cycle-chip"><p style="font-size:11px; color:var(--ink-soft);">2024</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">甲辰</p></div>
+        <div class="cycle-chip"><p style="font-size:11px; color:var(--ink-soft);">2025</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">乙巳</p></div>
+        <div class="cycle-chip" style="background:oklch(90% 0.06 78); border-color:oklch(90% 0.06 78);"><p style="font-size:11px; color:var(--gold-deep); font-weight:700;">2026</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">丙午</p></div>
+        <div class="cycle-chip"><p style="font-size:11px; color:var(--ink-soft);">2027</p><p style="font-family:'Gowun Batang',serif; font-size:15px; margin-top:4px;">丁未</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
