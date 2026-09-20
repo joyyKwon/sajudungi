@@ -31,10 +31,8 @@ export function DateTimePickerSheet({ visible, mode, title, value, minimumDate, 
         mode={mode}
         minimumDate={minimumDate}
         maximumDate={maximumDate}
-        onChange={(event, date) => {
-          if (event.type === 'set' && date) onConfirm(date);
-          else onCancel();
-        }}
+        onValueChange={(_, date) => onConfirm(date)}
+        onDismiss={onCancel}
       />
     );
   }
@@ -60,7 +58,7 @@ export function DateTimePickerSheet({ visible, mode, title, value, minimumDate, 
           themeVariant="light"
           minimumDate={minimumDate}
           maximumDate={maximumDate}
-          onChange={(_, date) => date && setDraft(date)}
+          onValueChange={(_, date) => setDraft(date)}
         />
       </View>
     </Modal>
