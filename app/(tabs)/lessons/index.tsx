@@ -4,27 +4,15 @@ import { router } from 'expo-router';
 import { colors, radius, spacing, fonts } from '../../../theme';
 import { Icon } from '../../../components/Icon';
 import { Mascot } from '../../../components/Mascot';
-
-type Lesson = {
-  id: string;
-  title: string;
-  subtitle: string;
-  status: 'done' | 'active' | 'locked';
-};
-
-// title/subtitle here are real curriculum copy and can stay as-is (or move to a CMS later).
-// MOCK: `status` (done/active/locked) must come from the signed-in user's per-lesson progress
-// in Supabase, not be hardcoded — right now every user sees the same fake progress.
-const LESSONS: Lesson[] = [
-  { id: '1', title: '1강 · 사주란 무엇일까?', subtitle: '사주팔자의 기본 개념 이해하기', status: 'done' },
-  { id: '2', title: '2강 · 천간, 하늘의 기운', subtitle: '갑을병정무기경신임계', status: 'done' },
-  { id: '3', title: '3강 · 지지, 땅의 기운', subtitle: '자축인묘진사오미신유술해', status: 'active' },
-  { id: '4', title: '4강 · 오행: 목화토금수', subtitle: '다섯 가지 기운의 상생상극', status: 'locked' },
-  { id: '5', title: '5강 · 나의 일간 찾기', subtitle: '내 사주에서 일간 읽는 법', status: 'locked' },
-  { id: '6', title: '6강 · 십신이란?', subtitle: '사주 해석의 핵심 열쇠', status: 'locked' },
-];
+import { useProgress } from '../../../context/ProgressContext';
+import { LESSONS } from '../../../lib/lessons';
 
 export default function LessonList() {
+  const { completed } = useProgress();
+  const total = LESSONS.length;
+  const doneCount = LESSONS.filter((l) => completed.includes(l.id)).length;
+  const activeId = LESSONS.find((l) => !completed.includes(l.id))?.id;
+
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.header}>
@@ -35,35 +23,32 @@ export default function LessonList() {
         <View style={styles.progressCard}>
           <Mascot pose="studying" width={60} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.progressLabel}>오늘도 한 걸음, 함께 배워볼까?</Text>
-            {/* MOCK: "12/40" and the 30% fill are hardcoded — derive both from LESSONS status / real progress count. */}
+            <Text style={styles.progressLabel}>
+              {doneCount === total ? '입문 과정을 모두 마쳤어! 대단해!' : '오늘도 한 걸음, 함께 배워볼까?'}
+            </Text>
             <View style={styles.progressBarRow}>
               <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, { width: '30%' }]} />
+                <View style={[styles.progressFill, { width: `${(doneCount / total) * 100}%` }]} />
               </View>
-              <Text style={styles.progressCount}>12/40</Text>
+              <Text style={styles.progressCount}>
+                {doneCount}/{total}
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* MOCK: level tabs are static — only 입문 renders and there's no onPress/state to switch levels
-            or filter LESSONS by level yet. */}
-        <View style={styles.tabs}>
-          <View style={[styles.tabPill, styles.tabPillActive]}>
-            <Text style={[styles.tabPillText, { color: colors.white }]}>입문</Text>
+        <View style={styles.levelRow}>
+          <View style={styles.levelPill}>
+            <Text style={styles.levelPillText}>입문</Text>
           </View>
-          <View style={styles.tabPill}>
-            <Text style={styles.tabPillText}>초급</Text>
-          </View>
-          <View style={styles.tabPill}>
-            <Text style={styles.tabPillText}>중급</Text>
-          </View>
+          <Text style={styles.levelNote}>초급·중급 과정은 준비 중이에요</Text>
         </View>
 
         <View style={{ gap: 10 }}>
           {LESSONS.map((lesson) => {
-            const locked = lesson.status === 'locked';
-            const active = lesson.status === 'active';
+            const done = completed.includes(lesson.id);
+            const active = lesson.id === activeId;
+            const locked = !done && !active;
             return (
               <Pressable
                 key={lesson.id}
@@ -71,15 +56,8 @@ export default function LessonList() {
                 onPress={() => router.push(`/lesson/${lesson.id}`)}
                 style={[styles.row, active && styles.rowActive, locked && { opacity: 0.55 }]}
               >
-                <View
-                  style={[
-                    styles.num,
-                    lesson.status === 'done' && { backgroundColor: colors.amberDeep },
-                    active && { backgroundColor: colors.red },
-                    locked && { backgroundColor: '#F1E9DA' },
-                  ]}
-                >
-                  {lesson.status === 'done' && <Icon name="check" size={16} color={colors.ink} strokeWidth={2.4} />}
+                <View style={[styles.num, done && { backgroundColor: colors.amberDeep }, active && { backgroundColor: colors.red }, locked && { backgroundColor: '#F1E9DA' }]}>
+                  {done && <Icon name="check" size={16} color={colors.ink} strokeWidth={2.4} />}
                   {active && <Text style={styles.numText}>{lesson.id}</Text>}
                   {locked && <Icon name="lock" size={14} color="#9a917f" />}
                 </View>
@@ -108,10 +86,10 @@ const styles = StyleSheet.create({
   progressTrack: { flex: 1, height: 6, backgroundColor: colors.white, borderRadius: radius.pill, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: colors.red },
   progressCount: { fontFamily: fonts.body, fontSize: 11, color: '#7a5a1f', fontWeight: '700' },
-  tabs: { flexDirection: 'row', gap: spacing.sm },
-  tabPill: { paddingVertical: 9, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line },
-  tabPillActive: { backgroundColor: colors.red, borderColor: colors.red },
-  tabPillText: { fontFamily: fonts.body, fontSize: 13, fontWeight: '700', color: colors.inkSoft },
+  levelRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  levelPill: { paddingVertical: 9, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: colors.red },
+  levelPillText: { fontFamily: fonts.body, fontSize: 13, fontWeight: '700', color: colors.white },
+  levelNote: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg },
   rowActive: { borderColor: colors.red, borderWidth: 2 },
   num: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
