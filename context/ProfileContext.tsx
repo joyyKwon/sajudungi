@@ -25,7 +25,8 @@ function isProfile(v: unknown): v is Profile {
     (p.calendarType === 'solar' || p.calendarType === 'lunar') &&
     [p.year, p.month, p.day].every((n) => Number.isInteger(n)) &&
     (p.hour === null || Number.isInteger(p.hour)) &&
-    (p.minute === null || Number.isInteger(p.minute))
+    (p.minute === null || Number.isInteger(p.minute)) &&
+    (p.isLeapMonth === undefined || typeof p.isLeapMonth === 'boolean')
   );
 }
 

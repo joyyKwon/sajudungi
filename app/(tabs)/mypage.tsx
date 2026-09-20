@@ -11,7 +11,7 @@ import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { useProgress } from '../../context/ProgressContext';
 import { useRequiredProfile, useSaju } from '../../context/ProfileContext';
 import { LESSONS } from '../../lib/lessons';
-import { describeBasis, formatTime } from '../../lib/format';
+import { describeBasis, formatBirthDate, formatTime } from '../../lib/format';
 
 export default function MyPage() {
   const profile = useRequiredProfile();
@@ -20,7 +20,7 @@ export default function MyPage() {
   const [basisOpen, setBasisOpen] = useState(false);
 
   const doneCount = LESSONS.filter((l) => completed.includes(l.id)).length;
-  const birth = `${profile.calendarType === 'lunar' ? '음력 ' : ''}${profile.year}년 ${profile.month}월 ${profile.day}일 ${
+  const birth = `${formatBirthDate(profile)} ${
     profile.hour === null ? '(시간 모름)' : formatTime(profile.hour, profile.minute ?? 0)
   }`;
 

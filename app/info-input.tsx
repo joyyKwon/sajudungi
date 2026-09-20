@@ -8,9 +8,9 @@ import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
 import { DateTimePickerSheet } from '../components/DateTimePickerSheet';
 import { Profile, useProfile } from '../context/ProfileContext';
-import { calculateSaju } from '../lib/saju';
 import type { Gender, CalendarType } from '../lib/saju';
-import { formatTime } from '../lib/format';
+import { formatBirthDate, formatTime } from '../lib/format';
+import { validateLunarDate } from '../lib/lunar';
 
 const MIN_DATE = new Date(1900, 0, 1);
 const DEFAULT_DATE = new Date(1995, 5, 15);
@@ -28,6 +28,7 @@ export default function InfoInput() {
   const [gender, setGender] = useState<Gender>(profile?.gender ?? 'female');
   const [calendarType, setCalendarType] = useState<CalendarType>(profile?.calendarType ?? 'solar');
   const [timeUnknown, setTimeUnknown] = useState(profile ? profile.hour === null : false);
+  const [isLeapMonth, setIsLeapMonth] = useState(profile?.isLeapMonth ?? false);
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
@@ -78,13 +79,27 @@ export default function InfoInput() {
           <Pressable style={[styles.fieldBox, styles.fieldRow]} onPress={() => setPicker('date')}>
             <Text style={[styles.fieldValue, !birthDate && { color: colors.inkFaint }]}>
               {birthDate
-                ? `${calendarType === 'lunar' ? '음력 ' : ''}${birthDate.getFullYear()}년 ${birthDate.getMonth() + 1}월 ${birthDate.getDate()}일`
+                ? formatBirthDate({
+                    year: birthDate.getFullYear(),
+                    month: birthDate.getMonth() + 1,
+                    day: birthDate.getDate(),
+                    calendarType,
+                    isLeapMonth,
+                  })
                 : '생년월일을 선택하세요'}
             </Text>
             <Icon name="calendarDate" size={18} color={colors.inkFaint} />
           </Pressable>
           {calendarType === 'lunar' && (
-            <Text style={styles.fieldHint}>음력 날짜 그대로 선택해주세요. 존재하지 않는 날짜는 확인할 때 알려드려요.</Text>
+            <>
+              <Pressable style={styles.checkboxRow} onPress={() => setIsLeapMonth((v) => !v)}>
+                <View style={[styles.checkbox, isLeapMonth && styles.checkboxChecked]}>
+                  {isLeapMonth && <Icon name="check" size={12} color={colors.white} strokeWidth={3} />}
+                </View>
+                <Text style={styles.checkboxLabel}>윤달이에요</Text>
+              </Pressable>
+              <Text style={styles.fieldHint}>음력 날짜 그대로 선택해주세요. 존재하지 않는 날짜는 저장할 때 알려드려요.</Text>
+            </>
           )}
         </Field>
 
@@ -121,15 +136,12 @@ export default function InfoInput() {
               day: birthDate.getDate(),
               hour: timeUnknown || !birthTime ? null : birthTime.getHours(),
               minute: timeUnknown || !birthTime ? null : birthTime.getMinutes(),
+              isLeapMonth: calendarType === 'lunar' ? isLeapMonth : undefined,
             };
 
-            try {
-              calculateSaju(next);
-            } catch {
-              return Alert.alert(
-                '올바르지 않은 날짜예요',
-                calendarType === 'lunar' ? '존재하지 않는 음력 날짜예요. 다시 확인해주세요.' : '날짜를 다시 확인해주세요.',
-              );
+            if (calendarType === 'lunar') {
+              const problem = validateLunarDate(next.year, next.month, next.day, isLeapMonth);
+              if (problem) return Alert.alert('올바르지 않은 날짜예요', problem);
             }
 
             // MOCK: profile is stored on-device only (AsyncStorage). Sync to Supabase once accounts exist.
@@ -241,7 +253,7 @@ const styles = StyleSheet.create({
   segItemActive: { backgroundColor: colors.red },
   segItemText: { fontFamily: fonts.body, fontSize: 14, fontWeight: '700', color: colors.inkSoft },
   segItemTextActive: { color: colors.white },
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 10 },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 4, paddingVertical: 8 },
   checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   checkboxChecked: { backgroundColor: colors.red, borderColor: colors.red },
   checkboxLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft },

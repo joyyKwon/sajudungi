@@ -8,7 +8,7 @@ import { Profile, useRequiredProfile, useSaju } from '../../context/ProfileConte
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { Pillar as EnginePillar, PillarKey, SajuResult, WuXing } from '../../lib/saju';
 import { interpretPillar } from '../../lib/interpret';
-import { describeBasis, formatTime } from '../../lib/format';
+import { describeBasis, formatBirthDate, formatTime } from '../../lib/format';
 
 type Pillar = {
   key: string;
@@ -40,7 +40,6 @@ const ELEMENTS = [
 
 function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
   const who = `${profile.name}님`;
-  const calLabel = profile.calendarType === 'lunar' ? '음력 ' : '';
 
   const toUi = (key: PillarKey, label: string, p: EnginePillar, calcReason: string): Pillar => ({
     key,
@@ -71,7 +70,7 @@ function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
       'day',
       '일주',
       saju.day,
-      `일주는 태어난 '날'의 간지야. ${who}이 태어난 ${calLabel}${profile.year}년 ${profile.month}월 ${profile.day}일의 일진을 만세력에서 찾아보면 ${saju.day.hangul}(${saju.day.ganZhi})가 나와!`,
+      `일주는 태어난 '날'의 간지야. ${who}이 태어난 ${formatBirthDate(profile)}${profile.calendarType === 'lunar' ? `은 양력으로 ${saju.solarDate.year}년 ${saju.solarDate.month}월 ${saju.solarDate.day}일이야. 그` : '의'} 일진을 만세력에서 찾아보면 ${saju.day.hangul}(${saju.day.ganZhi})가 나와!`,
     ),
   ];
 
@@ -107,7 +106,7 @@ export default function Manseryeok() {
     active: s.year === currentYear,
   }));
 
-  const birthLabel = `사주 원국 · ${profile.calendarType === 'lunar' ? '음력 ' : ''}${profile.year}년 ${profile.month}월 ${profile.day}일 ${
+  const birthLabel = `사주 원국 · ${formatBirthDate(profile)} ${
     profile.hour === null ? '시간 모름' : formatTime(profile.hour, profile.minute ?? 0)
   }`;
 
