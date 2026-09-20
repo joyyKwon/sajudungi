@@ -1,5 +1,6 @@
-import { Solar, Lunar } from 'lunar-javascript';
+import { Solar } from 'lunar-javascript';
 import { koreaOffsetAt } from './koreaTime';
+import { lunarToSolar } from './lunar';
 
 export type Gender = 'male' | 'female';
 export type CalendarType = 'solar' | 'lunar';
@@ -14,6 +15,8 @@ export type BirthInput = {
   hour: number | null;
   minute: number | null;
   calendarType: CalendarType;
+  /** Lunar input only: the month is the leap month (윤달). */
+  isLeapMonth?: boolean;
 };
 
 export type Pillar = {
@@ -66,6 +69,8 @@ export type SajuResult = {
   daeun: DaeunEntry[];
   seun: SeunEntry[];
   basis: CalcBasis;
+  /** The solar date the pillars were computed for (differs from the input for lunar birthdays). */
+  solarDate: { year: number; month: number; day: number };
 };
 
 export const GAN_HANGUL: Record<string, string> = {
@@ -128,16 +133,16 @@ export function calculateSaju(input: BirthInput, options: SajuOptions = DEFAULT_
   const hour = input.hour ?? 12;
   const minute = input.minute ?? 0;
 
-  // Lunar-calendar input is converted to its solar date first.
-  // (Leap-month input isn't supported yet — the picker has no 윤달 toggle.)
+  // Lunar-calendar input is converted to its solar date first (Korean/KASI calendar).
   let y = input.year;
   let m = input.month;
   let d = input.day;
   if (input.calendarType === 'lunar') {
-    const converted = Lunar.fromYmd(y, m, d).getSolar();
-    y = converted.getYear();
-    m = converted.getMonth();
-    d = converted.getDay();
+    const converted = lunarToSolar(y, m, d, input.isLeapMonth ?? false);
+    if (!converted) throw new Error(`Invalid lunar date: ${y}-${input.isLeapMonth ? 'leap ' : ''}${m}-${d}`);
+    y = converted.year;
+    m = converted.month;
+    d = converted.day;
   }
 
   const wallMs = Date.UTC(y, m - 1, d, hour, minute);
@@ -195,6 +200,7 @@ export function calculateSaju(input: BirthInput, options: SajuOptions = DEFAULT_
     daeun,
     seun,
     basis: { ...options, notes },
+    solarDate: { year: y, month: m, day: d },
   };
 }
 

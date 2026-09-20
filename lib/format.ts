@@ -14,3 +14,11 @@ export function describeBasis(basis: CalcBasis) {
   ];
   return parts.join(' · ');
 }
+
+type BirthDateLike = { year: number; month: number; day: number; calendarType: 'solar' | 'lunar'; isLeapMonth?: boolean };
+
+/** "1996년 3월 14일" or "음력 1995년 윤8월 1일". */
+export function formatBirthDate(b: BirthDateLike) {
+  const lunar = b.calendarType === 'lunar';
+  return `${lunar ? '음력 ' : ''}${b.year}년 ${lunar && b.isLeapMonth ? '윤' : ''}${b.month}월 ${b.day}일`;
+}
