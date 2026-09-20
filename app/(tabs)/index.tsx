@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -5,7 +6,9 @@ import { colors, radius, spacing, fonts } from '../../theme';
 import { Card } from '../../components/Card';
 import { Icon, IconName } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
-import { useProfile } from '../../context/ProfileContext';
+import { useProfile, useSaju } from '../../context/ProfileContext';
+import { dailyFlow } from '../../lib/daily';
+import { TEN_GODS } from '../../lib/content/tenGods';
 
 type MenuItem = {
   icon: IconName;
@@ -25,41 +28,41 @@ const MENU: MenuItem[] = [
 ];
 
 export default function Home() {
-  const { profile } = useProfile();
+  const { profile, options } = useProfile();
+  const saju = useSaju();
+  const todayKey = new Date().toDateString();
+  const flow = useMemo(() => dailyFlow(saju, options), [saju, options, todayKey]);
+  const god = TEN_GODS[flow.god];
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>안녕하세요</Text>
-          <Text style={styles.name}>{profile?.name}님</Text>
+          <Text style={styles.name}>{profile!.name}님</Text>
         </View>
-        <View style={styles.headerIcons}>
-          <Icon name="bell" size={22} color="#6b5a45" />
+        <Pressable onPress={() => router.push('/(tabs)/mypage')} hitSlop={12}>
           <Icon name="user" size={22} color="#6b5a45" />
-        </View>
+        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* MOCK: static copy. Replace with a real daily message generated from the user's saju (rotate daily). */}
         <View style={[styles.mascotCard]}>
           <Mascot pose="front" width={52} />
           <View style={{ flex: 1 }}>
             <Text style={styles.mascotLabel}>오늘의 한마디</Text>
-            <Text style={styles.mascotText}>
-              오늘은 미뤄뒀던 연락을 해보기 좋은 날이야. 작은 인연이 큰 기쁨이 될 수 있어!
-            </Text>
+            <Text style={styles.mascotText}>{god.today}</Text>
           </View>
         </View>
 
-        {/* MOCK: static fortune text/stars. Replace with real daily-fortune calculation, and wire "자세히 보기" to a real destination. */}
         <Card>
-          <View style={styles.rowBetween}>
-            <Text style={styles.cardTitle}>오늘의 운세</Text>
-            <Text style={styles.link}>자세히 보기 &gt;</Text>
-          </View>
-          <Text style={styles.cardBody}>
-            전체운 ★★★★☆ · 재물운 ★★★☆☆{'\n'}대인관계에서 좋은 소식이 들려오는 하루예요.
+          <Text style={styles.cardTitle}>오늘의 일진</Text>
+          <Text style={styles.flowHeadline}>
+            {flow.pillar.hangul}({flow.pillar.ganZhi})일 · {flow.god}({god.hanja})의 날
+          </Text>
+          <Text style={styles.cardBody}>{god.meaning}</Text>
+          <Text style={styles.flowBasis}>
+            내 일간 {saju.dayGan} 기준으로 오늘의 천간 {flow.pillar.gan}은 {flow.god}이에요
           </Text>
         </Card>
 
@@ -102,7 +105,6 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.xl, paddingTop: 22, paddingBottom: 10 },
   greeting: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft },
   name: { fontFamily: fonts.display, fontSize: 20, color: colors.ink, marginTop: 2 },
-  headerIcons: { flexDirection: 'row', gap: 14 },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.lg },
   mascotCard: {
     backgroundColor: colors.amberSoft,
@@ -116,7 +118,8 @@ const styles = StyleSheet.create({
   mascotText: { fontFamily: fonts.body, fontSize: 13.5, color: colors.ink, lineHeight: 19 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
-  link: { fontFamily: fonts.body, fontSize: 12, color: colors.red, fontWeight: '700' },
+  flowHeadline: { fontFamily: fonts.body, fontSize: 15, fontWeight: '700', color: colors.red, marginTop: 10 },
+  flowBasis: { fontFamily: fonts.body, fontSize: 11.5, color: colors.inkFaint, marginTop: 8 },
   cardBody: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft, marginTop: 8, lineHeight: 19 },
   sectionTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink, marginBottom: 6, paddingHorizontal: 6 },
   menuRow: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 6 },
