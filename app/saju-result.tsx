@@ -6,8 +6,20 @@ import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
 import { useProfile, useRequiredProfile, useSaju } from '../context/ProfileContext';
-import { ELEMENT_HANGUL, ELEMENT_HANJA, ELEMENT_TRAIT } from '../lib/sajuContent';
+import { ELEMENT_HANGUL, ELEMENT_HANJA } from '../lib/sajuContent';
 import { describeBasis } from '../lib/format';
+import { elementCounts } from '../lib/saju';
+import { ELEMENT_ORDER, elementInsights } from '../lib/interpret';
+import { ILGAN } from '../lib/content/ilgan';
+import { ILJU } from '../lib/content/ilju';
+
+const ELEMENT_COLOR = {
+  wood: colors.wood,
+  fire: colors.fire,
+  earth: colors.earth,
+  metal: colors.metal,
+  water: colors.water,
+} as const;
 
 export default function SajuResultScreen() {
   const { profile } = useProfile();
@@ -18,6 +30,12 @@ export default function SajuResultScreen() {
 function SajuResult() {
   const profile = useRequiredProfile();
   const saju = useSaju();
+
+  const ilgan = ILGAN[saju.day.gan];
+  const counts = elementCounts(saju);
+  const maxCount = Math.max(...Object.values(counts), 1);
+  const insights = elementInsights(saju);
+  const ilganTag = `일간 ${saju.day.gan}(${ELEMENT_HANGUL[saju.dayGanElement]}) 기준`;
 
   const pillars = [
     { label: '년주', pillar: saju.year },
@@ -67,8 +85,6 @@ function SajuResult() {
           <Text style={styles.basisText}>계산 기준 · {describeBasis(saju.basis)}</Text>
         </Card>
 
-        {/* MOCK: 일간 이름/오행은 실제 계산값이지만, 설명 문구(ELEMENT_TRAIT)와 아래 성격/재물운/애정운은
-            아직 고정 문구. 계산된 일간·십신을 바탕으로 한 해석 콘텐츠가 생기면 교체. */}
         <Card style={styles.ilganCard}>
           <Text style={styles.ilganLabel}>나의 일간</Text>
           <Text style={styles.ilganTitle}>
@@ -76,26 +92,67 @@ function SajuResult() {
             {ELEMENT_HANGUL[saju.dayGanElement]} ({saju.dayGan}
             {ELEMENT_HANJA[saju.dayGanElement]})
           </Text>
-          <Text style={styles.ilganBody}>{ELEMENT_TRAIT[saju.dayGanElement]}</Text>
+          <Text style={styles.ilganBody}>{ilgan.summary}</Text>
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle}>성격</Text>
-          <Text style={styles.sectionBody}>솔직하고 주도적이며, 목표가 생기면 끝까지 밀어붙이는 힘이 있어요. 다만 고집이 세다는 말을 들을 때도 있답니다.</Text>
+          <Text style={styles.sectionTitle}>
+            나의 일주 · {saju.day.hangul}({saju.day.ganZhi})
+          </Text>
+          <Text style={styles.sectionBody}>{ILJU[saju.day.ganZhi]}</Text>
+        </Card>
+
+        <Card>
+          <Text style={styles.sectionTitle}>오행 분포</Text>
+          <View style={styles.bars}>
+            {ELEMENT_ORDER.map((el) => (
+              <View key={el} style={styles.barRow}>
+                <Text style={styles.barLabel}>{ELEMENT_HANJA[el]}</Text>
+                <View style={styles.barTrack}>
+                  <View style={[styles.barFill, { width: `${(counts[el] / maxCount) * 100}%`, backgroundColor: ELEMENT_COLOR[el] }]} />
+                </View>
+                <Text style={styles.barCount}>{counts[el]}</Text>
+              </View>
+            ))}
+          </View>
+          {insights.map((line) => (
+            <Text key={line} style={[styles.sectionBody, { marginTop: 8 }]}>
+              {line}
+            </Text>
+          ))}
+          <Text style={styles.footnote}>겉으로 드러난 글자 기준이며, 지지 속 숨은 기운(지장간)은 포함하지 않았어요.</Text>
+        </Card>
+
+        <Card>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>성격</Text>
+            <Text style={styles.tag}>{ilganTag}</Text>
+          </View>
+          <Text style={styles.sectionBody}>{ilgan.personality}</Text>
         </Card>
         <Card>
-          <Text style={styles.sectionTitle}>재물운</Text>
-          <Text style={styles.sectionBody}>꾸준히 쌓아가는 재물운이에요. 급하게 불리려 하기보다 차근차근 모으는 방식이 잘 맞아요.</Text>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>재물운</Text>
+            <Text style={styles.tag}>{ilganTag}</Text>
+          </View>
+          <Text style={styles.sectionBody}>{ilgan.wealth}</Text>
         </Card>
         <Card>
-          <Text style={styles.sectionTitle}>애정운</Text>
-          <Text style={styles.sectionBody}>한번 마음을 주면 오래가는 편. 다만 표현이 서툴러 오해를 살 때가 있으니 마음을 조금 더 자주 표현해보세요.</Text>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>애정운</Text>
+            <Text style={styles.tag}>{ilganTag}</Text>
+          </View>
+          <Text style={styles.sectionBody}>{ilgan.love}</Text>
         </Card>
+
+        <Text style={styles.disclaimer}>
+          사주 해석은 관점에 따라 달라질 수 있는 참고용이에요. 일간을 중심으로 한 경향이니 재미로 즐겨주세요.
+        </Text>
 
         <Pressable style={styles.ctaCard} onPress={() => router.push('/(tabs)/manseryeok')}>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.ctaTitle}>더 깊이 알고 싶다면?</Text>
-            <Text style={styles.ctaSubtitle}>만세력에서 대운·세운까지 자세히 봐요</Text>
+            <Text style={styles.ctaSubtitle}>만세력에서 기둥마다 해석의 이유를 눌러서 확인해요</Text>
           </View>
           <Icon name="chevronRight" size={18} color="#7a5a1f" />
         </Pressable>
@@ -123,9 +180,19 @@ const styles = StyleSheet.create({
   ilganCard: { backgroundColor: colors.red, borderWidth: 0 },
   ilganLabel: { fontFamily: fonts.body, fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: '700' },
   ilganTitle: { fontFamily: fonts.display, fontSize: 24, color: colors.white, marginTop: 6 },
-  ilganBody: { fontFamily: fonts.body, fontSize: 13, color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
+  ilganBody: { fontFamily: fonts.body, fontSize: 13.5, color: 'rgba(255,255,255,0.92)', marginTop: 8, lineHeight: 20 },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   sectionTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink, marginBottom: 6 },
+  tag: { fontFamily: fonts.body, fontSize: 10.5, color: colors.inkSoft, backgroundColor: colors.amberSoft, paddingVertical: 3, paddingHorizontal: 8, borderRadius: radius.pill, overflow: 'hidden' },
   sectionBody: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft, lineHeight: 20 },
+  bars: { gap: 8, marginTop: 2 },
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  barLabel: { width: 20, fontFamily: fonts.display, fontSize: 15, color: colors.ink, textAlign: 'center' },
+  barTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.line, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 5 },
+  barCount: { width: 16, fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, textAlign: 'right' },
+  footnote: { fontFamily: fonts.body, fontSize: 11, color: colors.inkFaint, marginTop: 10, lineHeight: 16 },
+  disclaimer: { fontFamily: fonts.body, fontSize: 11.5, color: colors.inkSoft, textAlign: 'center', lineHeight: 17, paddingHorizontal: spacing.md },
   ctaCard: { backgroundColor: colors.amberSoft, borderRadius: radius.xl, padding: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   ctaTitle: { fontFamily: fonts.body, fontSize: 13.5, fontWeight: '700', color: colors.ink },
   ctaSubtitle: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, marginTop: 2 },

@@ -6,8 +6,8 @@ import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { Profile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
-import { Pillar as EnginePillar, SajuResult, WuXing } from '../../lib/saju';
-import { ELEMENT_KO, ELEMENT_TRAIT } from '../../lib/sajuContent';
+import { Pillar as EnginePillar, PillarKey, SajuResult, WuXing } from '../../lib/saju';
+import { interpretPillar } from '../../lib/interpret';
 import { describeBasis, formatTime } from '../../lib/format';
 
 type Pillar = {
@@ -42,7 +42,7 @@ function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
   const who = `${profile.name}님`;
   const calLabel = profile.calendarType === 'lunar' ? '음력 ' : '';
 
-  const toUi = (key: string, label: string, p: EnginePillar, calcReason: string): Pillar => ({
+  const toUi = (key: PillarKey, label: string, p: EnginePillar, calcReason: string): Pillar => ({
     key,
     label,
     stem: p.gan,
@@ -51,7 +51,7 @@ function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
     branchColor: ELEMENT_COLOR[p.zhiElement],
     hangul: p.hangul,
     calcReason,
-    interpretation: `${p.hangul}(${p.ganZhi})의 천간은 ${ELEMENT_KO[p.ganElement]} 기운이에요. ${ELEMENT_TRAIT[p.ganElement]}`,
+    interpretation: interpretPillar(saju, key),
   });
 
   const list: Pillar[] = [
