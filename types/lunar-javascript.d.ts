@@ -43,5 +43,8 @@ declare module 'lunar-javascript' {
     getTimeZhi(): string;
     getYun(gender: 0 | 1): Yun;
     setSect(sect: 1 | 2): void;
+    getYearShiShenGan(): string;
+    getMonthShiShenGan(): string;
+    getTimeShiShenGan(): string;
   }
 }

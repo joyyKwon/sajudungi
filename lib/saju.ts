@@ -197,3 +197,51 @@ export function calculateSaju(input: BirthInput, options: SajuOptions = DEFAULT_
     basis: { ...options, notes },
   };
 }
+
+// ---- 십신 / 오행 분포 helpers ---------------------------------------------
+
+export type TenGod = '비견' | '겁재' | '식신' | '상관' | '편재' | '정재' | '편관' | '정관' | '편인' | '정인';
+
+const ELEMENT_CYCLE: WuXing[] = ['wood', 'fire', 'earth', 'metal', 'water'];
+const YANG_GAN = new Set(['甲', '丙', '戊', '庚', '壬']);
+
+/** 십신: how `gan` relates to the day master `dayGan` (element cycle + polarity). */
+export function tenGodOf(dayGan: string, gan: string): TenGod {
+  const step = (ELEMENT_CYCLE.indexOf(GAN_ELEMENT[gan]) - ELEMENT_CYCLE.indexOf(GAN_ELEMENT[dayGan]) + 5) % 5;
+  const samePolarity = YANG_GAN.has(dayGan) === YANG_GAN.has(gan);
+  switch (step) {
+    case 0: return samePolarity ? '비견' : '겁재';
+    case 1: return samePolarity ? '식신' : '상관';
+    case 2: return samePolarity ? '편재' : '정재';
+    case 3: return samePolarity ? '편관' : '정관';
+    default: return samePolarity ? '편인' : '정인';
+  }
+}
+
+/** 지지의 본기(주된 지장간). */
+export const ZHI_MAIN_GAN: Record<string, string> = {
+  子: '癸', 丑: '己', 寅: '甲', 卯: '乙', 辰: '戊', 巳: '丙',
+  午: '丁', 未: '己', 申: '庚', 酉: '辛', 戌: '戊', 亥: '壬',
+};
+
+export type PillarKey = 'year' | 'month' | 'day' | 'hour';
+
+export function pillarsOf(saju: SajuResult): { key: PillarKey; pillar: Pillar }[] {
+  const list: { key: PillarKey; pillar: Pillar }[] = [
+    { key: 'year', pillar: saju.year },
+    { key: 'month', pillar: saju.month },
+    { key: 'day', pillar: saju.day },
+  ];
+  if (saju.hour) list.push({ key: 'hour', pillar: saju.hour });
+  return list;
+}
+
+/** Count of each 오행 across the visible characters (천간+지지 of each pillar; hidden stems excluded). */
+export function elementCounts(saju: SajuResult): Record<WuXing, number> {
+  const counts: Record<WuXing, number> = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
+  for (const { pillar } of pillarsOf(saju)) {
+    counts[pillar.ganElement] += 1;
+    counts[pillar.zhiElement] += 1;
+  }
+  return counts;
+}
