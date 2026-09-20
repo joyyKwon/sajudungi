@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '../theme';
+import { ProfileProvider } from '../context/ProfileContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,15 +27,17 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.bg },
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="saju-result" options={{ presentation: 'card' }} />
-      </Stack>
+      <ProfileProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.bg },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="saju-result" options={{ presentation: 'card' }} />
+        </Stack>
+      </ProfileProvider>
     </SafeAreaProvider>
   );
 }

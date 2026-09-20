@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, fonts } from '../../theme';
 import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
+import { Profile, useProfile } from '../../context/ProfileContext';
+import { calculateSaju, Pillar as EnginePillar, SajuResult, WuXing } from '../../lib/saju';
+import { ELEMENT_KO, ELEMENT_TRAIT } from '../../lib/sajuContent';
+import { formatTime } from '../../lib/format';
 
 type Pillar = {
   key: string;
@@ -17,55 +21,13 @@ type Pillar = {
   interpretation: string;
 };
 
-// MOCK: hardcoded for 서연님 · 1996-03-14 15:30. Replace all of PILLARS/ELEMENTS/DAEUN/SEUN
-// with output from the real saju calculation engine (see project notes on manseryeok algorithm),
-// keyed off the signed-in user's saved birth date/time/calendar-type.
-const PILLARS: Pillar[] = [
-  {
-    key: 'year',
-    label: '년주',
-    stem: '丙',
-    branch: '子',
-    stemColor: colors.fire,
-    branchColor: colors.water,
-    hangul: '병자',
-    calcReason: '년주는 태어난 \'해\'의 간지야. 서연님은 1996년에 태어났으니, 그해의 간지를 만세력에서 찾아보면 병자(丙子)가 나와!',
-    interpretation: '병자년생은 밝고 따뜻한 기운을 타고났어요. 주변을 환하게 만드는 매력이 있어요.',
-  },
-  {
-    key: 'month',
-    label: '월주',
-    stem: '辛',
-    branch: '卯',
-    stemColor: '#7a7a7a',
-    branchColor: colors.wood,
-    hangul: '신묘',
-    calcReason: '월주는 태어난 \'달\'의 간지야. 3월은 절기상 묘월에 해당해서, 그 달의 천간과 합쳐 신묘(辛卯)가 나와!',
-    interpretation: '신묘월생은 섬세하고 계획적인 편이에요. 꼼꼼하게 준비하는 걸 좋아해요.',
-  },
-  {
-    key: 'day',
-    label: '일주',
-    stem: '甲',
-    branch: '子',
-    stemColor: colors.wood,
-    branchColor: colors.water,
-    hangul: '갑자',
-    calcReason: '일주는 태어난 \'날\'의 간지야. 서연님은 1996년 3월 14일에 태어났으니, 그날의 일진을 만세력에서 찾아보면 갑자(甲子)가 나와!',
-    interpretation: '갑자 일주는 큰 나무처럼 곧고 자라나려는 기운이 강해요. 리더십이 있고 새로운 일을 시작하는 데 두려움이 없는 편이에요.',
-  },
-  {
-    key: 'hour',
-    label: '시주',
-    stem: '庚',
-    branch: '午',
-    stemColor: '#7a7a7a',
-    branchColor: colors.fire,
-    hangul: '경오',
-    calcReason: '시주는 태어난 \'시각\'의 간지야. 오후 3시 30분은 신시(申時) 근처인데, 일간과 조합하면 경오(庚午)가 나와!',
-    interpretation: '경오시생은 추진력이 좋고 결단이 빨라요. 마음먹은 건 바로 실행에 옮기는 타입이에요.',
-  },
-];
+const ELEMENT_COLOR: Record<WuXing, string> = {
+  wood: colors.wood,
+  fire: colors.fire,
+  earth: colors.earth,
+  metal: colors.metal,
+  water: colors.water,
+};
 
 const ELEMENTS = [
   { label: '목 · 성장', color: colors.wood },
@@ -75,22 +37,78 @@ const ELEMENTS = [
   { label: '수 · 지혜', color: colors.water },
 ];
 
-const DAEUN = [
-  { age: '3세', ganji: '壬寅' },
-  { age: '13세', ganji: '癸卯' },
-  { age: '23세', ganji: '甲辰', active: true },
-  { age: '33세', ganji: '乙巳' },
-  { age: '43세', ganji: '丙午' },
-];
+function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
+  const who = `${profile.name}님`;
+  const calLabel = profile.calendarType === 'lunar' ? '음력 ' : '';
 
-const SEUN = [
-  { year: '2024', ganji: '甲辰' },
-  { year: '2025', ganji: '乙巳' },
-  { year: '2026', ganji: '丙午', active: true },
-  { year: '2027', ganji: '丁未' },
-];
+  const toUi = (key: string, label: string, p: EnginePillar, calcReason: string): Pillar => ({
+    key,
+    label,
+    stem: p.gan,
+    branch: p.zhi,
+    stemColor: ELEMENT_COLOR[p.ganElement],
+    branchColor: ELEMENT_COLOR[p.zhiElement],
+    hangul: p.hangul,
+    calcReason,
+    interpretation: `${p.hangul}(${p.ganZhi})의 천간은 ${ELEMENT_KO[p.ganElement]} 기운이에요. ${ELEMENT_TRAIT[p.ganElement]}`,
+  });
+
+  const list: Pillar[] = [
+    toUi(
+      'year',
+      '년주',
+      saju.year,
+      `년주는 태어난 '해'의 간지야. 사주에서는 1월 1일이 아니라 입춘(立春)을 기준으로 해가 바뀌는데, ${who}의 년주는 ${saju.year.hangul}(${saju.year.ganZhi})로 나와!`,
+    ),
+    toUi(
+      'month',
+      '월주',
+      saju.month,
+      `월주는 태어난 '달'의 간지야. 사주의 달은 양력 달이 아니라 절기(節氣)를 기준으로 바뀌어서, ${who}이 태어난 시점의 월주는 ${saju.month.hangul}(${saju.month.ganZhi})가 나와!`,
+    ),
+    toUi(
+      'day',
+      '일주',
+      saju.day,
+      `일주는 태어난 '날'의 간지야. ${who}이 태어난 ${calLabel}${profile.year}년 ${profile.month}월 ${profile.day}일의 일진을 만세력에서 찾아보면 ${saju.day.hangul}(${saju.day.ganZhi})가 나와!`,
+    ),
+  ];
+
+  if (saju.hour && profile.hour !== null) {
+    list.push(
+      toUi(
+        'hour',
+        '시주',
+        saju.hour,
+        `시주는 태어난 '시각'의 간지야. ${formatTime(profile.hour, profile.minute ?? 0)}은 하루를 12개로 나눈 시진 중 ${saju.hour.hangul.slice(1)}시에 해당하고, 일간과 조합하면 ${saju.hour.hangul}(${saju.hour.ganZhi})가 나와!`,
+      ),
+    );
+  }
+
+  return list;
+}
 
 export default function Manseryeok() {
+  const { profile } = useProfile();
+  const saju = useMemo(() => calculateSaju(profile), [profile]);
+  const pillars = useMemo(() => buildPillars(profile, saju), [profile, saju]);
+
+  const currentYear = new Date().getFullYear();
+  const DAEUN = saju.daeun.slice(0, 9).map((d) => ({
+    age: `${d.startAge}세`,
+    ganji: d.ganZhi,
+    active: currentYear >= d.startYear && currentYear <= d.endYear,
+  }));
+  const SEUN = saju.seun.map((s) => ({
+    year: String(s.year),
+    ganji: s.ganZhi,
+    active: s.year === currentYear,
+  }));
+
+  const birthLabel = `사주 원국 · ${profile.calendarType === 'lunar' ? '음력 ' : ''}${profile.year}년 ${profile.month}월 ${profile.day}일 ${
+    profile.hour === null ? '시간 모름' : formatTime(profile.hour, profile.minute ?? 0)
+  }`;
+
   const [selected, setSelected] = useState<Pillar | null>(null);
   const [tab, setTab] = useState<'calc' | 'interpret'>('calc');
 
@@ -113,10 +131,9 @@ export default function Manseryeok() {
         </View>
 
         <View>
-          {/* MOCK: hardcoded birth info label, tied to the PILLARS mock above. */}
-          <Text style={styles.sectionLabel}>사주 원국 · 1996년 3월 14일 오후 3:30</Text>
+          <Text style={styles.sectionLabel}>{birthLabel}</Text>
           <View style={styles.pillarRow}>
-            {PILLARS.map((p) => {
+            {pillars.map((p) => {
               const isSelected = selected?.key === p.key;
               return (
                 <Pressable key={p.key} onPress={() => openSheet(p)} style={[styles.pillarCell, isSelected && styles.pillarCellActive]}>
@@ -131,6 +148,18 @@ export default function Manseryeok() {
                 </Pressable>
               );
             })}
+            {!saju.hour && (
+              <View style={[styles.pillarCell, { opacity: 0.55 }]}>
+                <Text style={styles.pillarLabel}>시주</Text>
+                <View style={[styles.glyph, { backgroundColor: colors.line }]}>
+                  <Text style={[styles.glyphText, { color: colors.inkFaint }]}>?</Text>
+                </View>
+                <View style={[styles.glyph, { backgroundColor: colors.line }]}>
+                  <Text style={[styles.glyphText, { color: colors.inkFaint }]}>?</Text>
+                </View>
+                <Text style={styles.pillarHangul}>모름</Text>
+              </View>
+            )}
           </View>
         </View>
 

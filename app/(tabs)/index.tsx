@@ -5,6 +5,7 @@ import { colors, radius, spacing, fonts } from '../../theme';
 import { Card } from '../../components/Card';
 import { Icon, IconName } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
+import { useProfile } from '../../context/ProfileContext';
 
 type MenuItem = {
   icon: IconName;
@@ -24,13 +25,14 @@ const MENU: MenuItem[] = [
 ];
 
 export default function Home() {
+  const { profile } = useProfile();
+
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.header}>
-        {/* MOCK: hardcoded name. Replace with the signed-in user's profile (Supabase). */}
         <View>
           <Text style={styles.greeting}>안녕하세요</Text>
-          <Text style={styles.name}>서연님</Text>
+          <Text style={styles.name}>{profile.name}님</Text>
         </View>
         <View style={styles.headerIcons}>
           <Icon name="bell" size={22} color="#6b5a45" />

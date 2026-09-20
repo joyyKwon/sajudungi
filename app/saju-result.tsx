@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -5,18 +6,21 @@ import { colors, radius, spacing, fonts } from '../theme';
 import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
-
-// MOCK: hardcoded for 서연님. Replace with the saju calculation engine's output for the
-// signed-in user (same source as app/(tabs)/manseryeok.tsx's PILLARS — consider sharing one
-// hook/selector between the two screens once the engine exists).
-const PILLARS = [
-  { label: '년주', hanja: '丙子', hangul: '병자' },
-  { label: '월주', hanja: '辛卯', hangul: '신묘' },
-  { label: '일주', hanja: '甲子', hangul: '갑자', highlight: true },
-  { label: '시주', hanja: '庚午', hangul: '경오' },
-];
+import { useProfile } from '../context/ProfileContext';
+import { calculateSaju } from '../lib/saju';
+import { ELEMENT_HANGUL, ELEMENT_HANJA, ELEMENT_TRAIT } from '../lib/sajuContent';
 
 export default function SajuResult() {
+  const { profile } = useProfile();
+  const saju = useMemo(() => calculateSaju(profile), [profile]);
+
+  const pillars = [
+    { label: '년주', pillar: saju.year },
+    { label: '월주', pillar: saju.month },
+    { label: '일주', pillar: saju.day, highlight: true },
+    { label: '시주', pillar: saju.hour },
+  ];
+
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.topbar}>
@@ -30,33 +34,34 @@ export default function SajuResult() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* MOCK: hardcoded name, same as app/(tabs)/index.tsx. */}
         <View style={styles.greetRow}>
           <Mascot pose="analyzing" width={64} />
-          <Text style={styles.greetText}>서연님의 사주를 풀어봤어!</Text>
+          <Text style={styles.greetText}>{profile.name}님의 사주를 풀어봤어!</Text>
         </View>
 
         <Card>
           <Text style={styles.cardLabel}>나의 사주 원국</Text>
           <View style={styles.pillarRow}>
-            {PILLARS.map((p) => (
-              <View key={p.label} style={[styles.pillar, p.highlight && styles.pillarHighlight]}>
+            {pillars.map((p) => (
+              <View key={p.label} style={[styles.pillar, p.highlight && styles.pillarHighlight, !p.pillar && { opacity: 0.55 }]}>
                 <Text style={[styles.pillarLabel, p.highlight && { color: colors.red }]}>{p.label}</Text>
-                <Text style={[styles.pillarHanja, p.highlight && { color: colors.red }]}>{p.hanja}</Text>
-                <Text style={[styles.pillarHangul, p.highlight && { color: colors.red }]}>{p.hangul}</Text>
+                <Text style={[styles.pillarHanja, p.highlight && { color: colors.red }]}>{p.pillar ? p.pillar.ganZhi : '?'}</Text>
+                <Text style={[styles.pillarHangul, p.highlight && { color: colors.red }]}>{p.pillar ? p.pillar.hangul : '모름'}</Text>
               </View>
             ))}
           </View>
         </Card>
 
-        {/* MOCK: 일간 + 성격/재물운/애정운 해석 텍스트 전부 고정 문구. 실제로는 계산된 일간을 바탕으로
-            해석 콘텐츠(정적 매핑 테이블이든 AI 생성이든)를 붙여야 함. */}
+        {/* MOCK: 일간 이름/오행은 실제 계산값이지만, 설명 문구(ELEMENT_TRAIT)와 아래 성격/재물운/애정운은
+            아직 고정 문구. 계산된 일간·십신을 바탕으로 한 해석 콘텐츠가 생기면 교체. */}
         <Card style={styles.ilganCard}>
           <Text style={styles.ilganLabel}>나의 일간</Text>
-          <Text style={styles.ilganTitle}>갑목 (甲木)</Text>
-          <Text style={styles.ilganBody}>
-            큰 나무처럼 곧고 자라나려는 기운이 강해요. 리더십이 있고 새로운 일을 시작하는 데 두려움이 없는 편이에요.
+          <Text style={styles.ilganTitle}>
+            {saju.dayGanHangul}
+            {ELEMENT_HANGUL[saju.dayGanElement]} ({saju.dayGan}
+            {ELEMENT_HANJA[saju.dayGanElement]})
           </Text>
+          <Text style={styles.ilganBody}>{ELEMENT_TRAIT[saju.dayGanElement]}</Text>
         </Card>
 
         <Card>
