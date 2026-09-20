@@ -1,13 +1,17 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { ColorValue } from 'react-native';
 import { colors } from '../../theme';
 import { Icon, IconName } from '../../components/Icon';
+import { useProfile } from '../../context/ProfileContext';
 
 function TabIcon(name: IconName) {
   return ({ color }: { color: ColorValue }) => <Icon name={name} size={20} color={color as string} />;
 }
 
 export default function TabsLayout() {
+  const { profile } = useProfile();
+  if (!profile) return <Redirect href="/" />;
+
   return (
     <Tabs
       screenOptions={{

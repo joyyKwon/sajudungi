@@ -17,14 +17,17 @@ const DEFAULT_DATE = new Date(1995, 5, 15);
 const DEFAULT_TIME = new Date(2000, 0, 1, 12, 0);
 
 export default function InfoInput() {
-  const { setProfile } = useProfile();
-  const [name, setName] = useState('');
-  const [birthDate, setBirthDate] = useState<Date | null>(null);
-  const [birthTime, setBirthTime] = useState<Date | null>(null);
+  const { profile, setProfile } = useProfile();
+  const editing = !!profile;
+  const [name, setName] = useState(profile?.name ?? '');
+  const [birthDate, setBirthDate] = useState<Date | null>(profile ? new Date(profile.year, profile.month - 1, profile.day) : null);
+  const [birthTime, setBirthTime] = useState<Date | null>(
+    profile && profile.hour !== null ? new Date(2000, 0, 1, profile.hour, profile.minute ?? 0) : null,
+  );
   const [picker, setPicker] = useState<'date' | 'time' | null>(null);
-  const [gender, setGender] = useState<Gender>('female');
-  const [calendarType, setCalendarType] = useState<CalendarType>('solar');
-  const [timeUnknown, setTimeUnknown] = useState(false);
+  const [gender, setGender] = useState<Gender>(profile?.gender ?? 'female');
+  const [calendarType, setCalendarType] = useState<CalendarType>(profile?.calendarType ?? 'solar');
+  const [timeUnknown, setTimeUnknown] = useState(profile ? profile.hour === null : false);
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
@@ -32,7 +35,7 @@ export default function InfoInput() {
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
-        <Text style={styles.topbarTitle}>내 정보 입력</Text>
+        <Text style={styles.topbarTitle}>{editing ? '내 정보 수정' : '내 정보 입력'}</Text>
       </View>
 
       <View style={styles.hintCard}>
@@ -103,7 +106,7 @@ export default function InfoInput() {
 
       <View style={styles.footer}>
         <Button
-          label="사주 보러가기"
+          label={editing ? '저장하기' : '사주 보러가기'}
           onPress={() => {
             if (!name.trim()) return Alert.alert('이름(닉네임)을 입력해주세요');
             if (!birthDate) return Alert.alert('생년월일을 선택해주세요');
@@ -129,7 +132,7 @@ export default function InfoInput() {
               );
             }
 
-            // MOCK: profile lives only in memory (ProfileContext). Persist to Supabase once profile storage exists.
+            // MOCK: profile is stored on-device only (AsyncStorage). Sync to Supabase once accounts exist.
             setProfile(next);
             router.replace('/(tabs)');
           }}

@@ -32,7 +32,7 @@ export default function Home() {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>안녕하세요</Text>
-          <Text style={styles.name}>{profile.name}님</Text>
+          <Text style={styles.name}>{profile?.name}님</Text>
         </View>
         <View style={styles.headerIcons}>
           <Icon name="bell" size={22} color="#6b5a45" />

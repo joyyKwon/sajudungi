@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, fonts } from '../../theme';
 import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
-import { Profile, useProfile, useSaju } from '../../context/ProfileContext';
+import { Profile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { Pillar as EnginePillar, SajuResult, WuXing } from '../../lib/saju';
 import { ELEMENT_KO, ELEMENT_TRAIT } from '../../lib/sajuContent';
@@ -90,7 +90,7 @@ function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
 }
 
 export default function Manseryeok() {
-  const { profile } = useProfile();
+  const profile = useRequiredProfile();
   const saju = useSaju();
   const [basisOpen, setBasisOpen] = useState(false);
   const pillars = useMemo(() => buildPillars(profile, saju), [profile, saju]);

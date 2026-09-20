@@ -1,16 +1,22 @@
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { colors, radius, spacing, fonts } from '../theme';
 import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
-import { useProfile, useSaju } from '../context/ProfileContext';
+import { useProfile, useRequiredProfile, useSaju } from '../context/ProfileContext';
 import { ELEMENT_HANGUL, ELEMENT_HANJA, ELEMENT_TRAIT } from '../lib/sajuContent';
 import { describeBasis } from '../lib/format';
 
-export default function SajuResult() {
+export default function SajuResultScreen() {
   const { profile } = useProfile();
+  if (!profile) return <Redirect href="/" />;
+  return <SajuResult />;
+}
+
+function SajuResult() {
+  const profile = useRequiredProfile();
   const saju = useSaju();
 
   const pillars = [
@@ -29,7 +35,16 @@ export default function SajuResult() {
           </Pressable>
           <Text style={styles.topbarTitle}>내 사주풀이</Text>
         </View>
-        <Icon name="share" size={20} color="#6b5a45" />
+        <Pressable
+          hitSlop={12}
+          onPress={() =>
+            Share.share({
+              message: `${profile.name}님의 사주 · 년주 ${saju.year.ganZhi} 월주 ${saju.month.ganZhi} 일주 ${saju.day.ganZhi}${saju.hour ? ` 시주 ${saju.hour.ganZhi}` : ''} (사주둥이)`,
+            })
+          }
+        >
+          <Icon name="share" size={20} color="#6b5a45" />
+        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

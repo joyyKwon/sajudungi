@@ -6,38 +6,41 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '../theme';
-import { ProfileProvider } from '../context/ProfileContext';
+import { ProfileProvider, useProfile } from '../context/ProfileContext';
+import { ProgressProvider, useProgress } from '../context/ProgressContext';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    GowunBatang_400Regular,
-    GowunBatang_700Bold,
-    GowunDodum_400Regular,
-  });
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) return null;
-
   return (
     <SafeAreaProvider>
       <ProfileProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.bg },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="saju-result" options={{ presentation: 'card' }} />
-        </Stack>
+        <ProgressProvider>
+          <AppShell />
+        </ProgressProvider>
       </ProfileProvider>
     </SafeAreaProvider>
+  );
+}
+
+// Keeps the splash screen up until fonts and saved data are loaded, so route
+// guards never see a half-loaded state.
+function AppShell() {
+  const [fontsLoaded] = useFonts({ GowunBatang_400Regular, GowunBatang_700Bold, GowunDodum_400Regular });
+  const { ready: profileReady } = useProfile();
+  const { ready: progressReady } = useProgress();
+  const ready = fontsLoaded && profileReady && progressReady;
+
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="saju-result" options={{ presentation: 'card' }} />
+    </Stack>
   );
 }

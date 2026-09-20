@@ -1,10 +1,14 @@
 import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import Svg, { Path, Circle, TextPath, Text as SvgText } from 'react-native-svg';
 import { colors, radius, spacing, fonts } from '../theme';
 import { Button } from '../components/Button';
+import { useProfile } from '../context/ProfileContext';
 
 export default function Onboarding() {
+  const { profile } = useProfile();
+  if (profile) return <Redirect href="/(tabs)" />;
+
   return (
     <View style={styles.screen}>
       <Image source={require('../assets/mascot/mascot_hero.jpg')} style={styles.hero} resizeMode="cover" />
