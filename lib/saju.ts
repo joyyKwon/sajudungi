@@ -1,4 +1,5 @@
 import { Solar, Lunar } from 'lunar-javascript';
+import { koreaOffsetAt } from './koreaTime';
 
 export type Gender = 'male' | 'female';
 export type CalendarType = 'solar' | 'lunar';
@@ -39,6 +40,20 @@ export type SeunEntry = {
   hangul: string;
 };
 
+export type SajuOptions = {
+  /** 진태양시 보정: 동경 127.5° 기준으로 −30분. 시주·일주 경계에 영향. */
+  longitudeCorrection: boolean;
+  /** yajasi: 23시대는 일주 당일 유지(시주만 子). jojasi: 23시부터 일주도 다음날. */
+  jasi: 'yajasi' | 'jojasi';
+};
+
+export const DEFAULT_SAJU_OPTIONS: SajuOptions = { longitudeCorrection: true, jasi: 'yajasi' };
+
+export type CalcBasis = SajuOptions & {
+  /** Human-readable adjustments actually applied to this birth time. */
+  notes: string[];
+};
+
 export type SajuResult = {
   year: Pillar;
   month: Pillar;
@@ -50,6 +65,7 @@ export type SajuResult = {
   dayGanElement: WuXing;
   daeun: DaeunEntry[];
   seun: SeunEntry[];
+  basis: CalcBasis;
 };
 
 const GAN_HANGUL: Record<string, string> = {
@@ -89,34 +105,30 @@ function buildPillar(gan: string, zhi: string): Pillar {
   };
 }
 
-/**
- * lunar-javascript's solar-term/day-boundary math is computed for China
- * Standard Time (UTC+8). Korea runs on KST (UTC+9), exactly one hour ahead,
- * so shifting the input back by one hour before handing it to the library
- * reproduces the correct KST-based 절기/일진 cutoffs. This is the standard
- * trick for reusing CST-based Chinese calendar libraries for Korean saju.
- */
-function toBeijingEquivalent(year: number, month: number, day: number, hour: number, minute: number) {
-  const kst = new Date(year, month - 1, day, hour, minute, 0);
-  const shifted = new Date(kst.getTime() - 60 * 60 * 1000);
-  return {
-    year: shifted.getFullYear(),
-    month: shifted.getMonth() + 1,
-    day: shifted.getDate(),
-    hour: shifted.getHours(),
-    minute: shifted.getMinutes(),
-  };
+const MIN = 60_000;
+const BEIJING_OFFSET = 480; // lunar-javascript's solar-term tables are in China Standard Time
+
+function solarAt(utcMs: number, offsetMinutes: number) {
+  const d = new Date(utcMs + offsetMinutes * MIN);
+  return Solar.fromYmdHms(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), 0);
 }
 
-export function calculateSaju(input: BirthInput): SajuResult {
+/**
+ * Two different clocks are needed:
+ *  - 년주/월주 flip at an astronomical instant (절입). We convert the birth
+ *    wall-clock to the real UTC instant (honouring Korea's historical
+ *    standard-time/DST changes) and read it in Beijing time, which is what
+ *    lunar-javascript's solar-term tables use.
+ *  - 일주/시주 follow the local clock. That clock is Korean standard time, or
+ *    with 진태양시 보정 the mean solar time at 동경 127.5° (UTC+8:30).
+ */
+export function calculateSaju(input: BirthInput, options: SajuOptions = DEFAULT_SAJU_OPTIONS): SajuResult {
   // When birth time is unknown, noon is used only to pick a stable point
-  // inside the correct day for year/month/day pillar math — the hour
-  // pillar itself is discarded below (`hour: null` on the result).
+  // inside the correct day — the hour pillar itself is discarded below.
   const hour = input.hour ?? 12;
   const minute = input.minute ?? 0;
 
-  // Lunar-calendar input is converted to its solar date first, then follows the
-  // same KST-shifted path as solar input so the hour pillar stays correct.
+  // Lunar-calendar input is converted to its solar date first.
   // (Leap-month input isn't supported yet — the picker has no 윤달 toggle.)
   let y = input.year;
   let m = input.month;
@@ -128,18 +140,27 @@ export function calculateSaju(input: BirthInput): SajuResult {
     d = converted.getDay();
   }
 
-  const b = toBeijingEquivalent(y, m, d, hour, minute);
-  const lunar = Solar.fromYmdHms(b.year, b.month, b.day, b.hour, b.minute, 0).getLunar();
+  const wallMs = Date.UTC(y, m - 1, d, hour, minute);
+  const korea = koreaOffsetAt(wallMs);
+  const utcMs = wallMs - korea.offset * MIN;
 
-  const ec = lunar.getEightChar();
+  const clockOffset = options.longitudeCorrection ? 510 : 540;
+  const ecYm = solarAt(utcMs, BEIJING_OFFSET).getLunar().getEightChar();
+  const ecDh = solarAt(utcMs, clockOffset).getLunar().getEightChar();
+  ecDh.setSect(options.jasi === 'yajasi' ? 2 : 1);
 
-  const year = buildPillar(ec.getYearGan(), ec.getYearZhi());
-  const month = buildPillar(ec.getMonthGan(), ec.getMonthZhi());
-  const day = buildPillar(ec.getDayGan(), ec.getDayZhi());
-  const hourPillar = input.hour === null ? null : buildPillar(ec.getTimeGan(), ec.getTimeZhi());
+  const notes: string[] = [];
+  if (korea.dst) notes.push('서머타임 −60분 반영');
+  if (korea.meridian127) notes.push('동경 127.5° 표준시 시기 반영');
+  if (options.longitudeCorrection && !korea.meridian127) notes.push('진태양시 −30분 보정');
+
+  const year = buildPillar(ecYm.getYearGan(), ecYm.getYearZhi());
+  const month = buildPillar(ecYm.getMonthGan(), ecYm.getMonthZhi());
+  const day = buildPillar(ecDh.getDayGan(), ecDh.getDayZhi());
+  const hourPillar = input.hour === null ? null : buildPillar(ecDh.getTimeGan(), ecDh.getTimeZhi());
 
   const genderCode = input.gender === 'male' ? 1 : 0;
-  const daYunList = ec.getYun(genderCode).getDaYun();
+  const daYunList = ecYm.getYun(genderCode).getDaYun();
   const daeun: DaeunEntry[] = daYunList
     .filter((dy) => dy.getGanZhi())
     .map((dy) => ({
@@ -173,5 +194,6 @@ export function calculateSaju(input: BirthInput): SajuResult {
     dayGanElement: day.ganElement,
     daeun,
     seun,
+    basis: { ...options, notes },
   };
 }
