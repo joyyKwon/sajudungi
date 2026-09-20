@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, fonts } from '../../theme';
 import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
-import { Profile, useProfile } from '../../context/ProfileContext';
-import { calculateSaju, Pillar as EnginePillar, SajuResult, WuXing } from '../../lib/saju';
+import { Profile, useProfile, useSaju } from '../../context/ProfileContext';
+import { CalcBasisSheet } from '../../components/CalcBasisSheet';
+import { Pillar as EnginePillar, SajuResult, WuXing } from '../../lib/saju';
 import { ELEMENT_KO, ELEMENT_TRAIT } from '../../lib/sajuContent';
-import { formatTime } from '../../lib/format';
+import { describeBasis, formatTime } from '../../lib/format';
 
 type Pillar = {
   key: string;
@@ -90,7 +91,8 @@ function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
 
 export default function Manseryeok() {
   const { profile } = useProfile();
-  const saju = useMemo(() => calculateSaju(profile), [profile]);
+  const saju = useSaju();
+  const [basisOpen, setBasisOpen] = useState(false);
   const pillars = useMemo(() => buildPillars(profile, saju), [profile, saju]);
 
   const currentYear = new Date().getFullYear();
@@ -121,7 +123,9 @@ export default function Manseryeok() {
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.topbar}>
         <Text style={styles.topbarTitle}>만세력</Text>
-        <Icon name="info" size={20} color="#6b5a45" />
+        <Pressable onPress={() => setBasisOpen(true)} hitSlop={12}>
+          <Icon name="info" size={20} color="#6b5a45" />
+        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -132,6 +136,10 @@ export default function Manseryeok() {
 
         <View>
           <Text style={styles.sectionLabel}>{birthLabel}</Text>
+          <Pressable onPress={() => setBasisOpen(true)} style={styles.basisRow}>
+            <Text style={styles.basisText}>계산 기준 · {describeBasis(saju.basis)}</Text>
+            <Icon name="chevronRight" size={12} color={colors.inkSoft} />
+          </Pressable>
           <View style={styles.pillarRow}>
             {pillars.map((p) => {
               const isSelected = selected?.key === p.key;
@@ -200,6 +208,8 @@ export default function Manseryeok() {
         </View>
       </ScrollView>
 
+      <CalcBasisSheet visible={basisOpen} onClose={() => setBasisOpen(false)} />
+
       <Modal visible={!!selected} transparent animationType="fade" onRequestClose={() => setSelected(null)}>
         <Pressable style={styles.overlay} onPress={() => setSelected(null)} />
         {selected && (
@@ -246,6 +256,8 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.lg },
   hint: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: colors.redSoft, paddingVertical: 7, paddingHorizontal: 12, borderRadius: radius.pill },
   hintText: { fontFamily: fonts.body, fontSize: 12, color: colors.red },
+  basisRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: -4, marginBottom: 10 },
+  basisText: { fontFamily: fonts.body, fontSize: 11.5, color: colors.inkSoft },
   sectionLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, fontWeight: '700', marginBottom: 10 },
   pillarRow: { flexDirection: 'row', gap: 8 },
   pillarCell: { flex: 1, alignItems: 'center', gap: 8, paddingVertical: 14, paddingHorizontal: 4, borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.line },

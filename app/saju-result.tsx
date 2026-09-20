@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -6,13 +5,13 @@ import { colors, radius, spacing, fonts } from '../theme';
 import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
-import { useProfile } from '../context/ProfileContext';
-import { calculateSaju } from '../lib/saju';
+import { useProfile, useSaju } from '../context/ProfileContext';
 import { ELEMENT_HANGUL, ELEMENT_HANJA, ELEMENT_TRAIT } from '../lib/sajuContent';
+import { describeBasis } from '../lib/format';
 
 export default function SajuResult() {
   const { profile } = useProfile();
-  const saju = useMemo(() => calculateSaju(profile), [profile]);
+  const saju = useSaju();
 
   const pillars = [
     { label: '년주', pillar: saju.year },
@@ -50,6 +49,7 @@ export default function SajuResult() {
               </View>
             ))}
           </View>
+          <Text style={styles.basisText}>계산 기준 · {describeBasis(saju.basis)}</Text>
         </Card>
 
         {/* MOCK: 일간 이름/오행은 실제 계산값이지만, 설명 문구(ELEMENT_TRAIT)와 아래 성격/재물운/애정운은
@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
   greetRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   greetText: { fontFamily: fonts.body, fontSize: 13.5, color: colors.inkSoft },
   cardLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, fontWeight: '700', marginBottom: 10 },
+  basisText: { fontFamily: fonts.body, fontSize: 11, color: colors.inkSoft, marginTop: 10 },
   pillarRow: { flexDirection: 'row', gap: 8 },
   pillar: { flex: 1, alignItems: 'center', paddingVertical: 12, paddingHorizontal: 4, borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line },
   pillarHighlight: { backgroundColor: colors.redSoft, borderColor: colors.redSoft },

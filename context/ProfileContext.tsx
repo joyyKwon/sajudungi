@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from 'react';
-import { BirthInput, Gender, CalendarType } from '../lib/saju';
+import { BirthInput, Gender, CalendarType, DEFAULT_SAJU_OPTIONS, SajuOptions, SajuResult, calculateSaju } from '../lib/saju';
 
 export type Profile = BirthInput & { name: string };
 
@@ -21,13 +21,16 @@ const DEFAULT_PROFILE: Profile = {
 type ProfileContextValue = {
   profile: Profile;
   setProfile: (profile: Profile) => void;
+  options: SajuOptions;
+  setOptions: (options: SajuOptions) => void;
 };
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
-  const value = useMemo(() => ({ profile, setProfile }), [profile]);
+  const [options, setOptions] = useState<SajuOptions>(DEFAULT_SAJU_OPTIONS);
+  const value = useMemo(() => ({ profile, setProfile, options, setOptions }), [profile, options]);
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 }
 
@@ -35,6 +38,12 @@ export function useProfile() {
   const ctx = useContext(ProfileContext);
   if (!ctx) throw new Error('useProfile must be used within a ProfileProvider');
   return ctx;
+}
+
+/** Saju for the current profile, recomputed when the profile or calc options change. */
+export function useSaju(): SajuResult {
+  const { profile, options } = useProfile();
+  return useMemo(() => calculateSaju(profile, options), [profile, options]);
 }
 
 export type { Gender, CalendarType };

@@ -3,3 +3,14 @@ export function formatTime(hour: number, minute: number) {
   const h12 = hour % 12 === 0 ? 12 : hour % 12;
   return minute === 0 ? `${period} ${h12}시` : `${period} ${h12}시 ${minute}분`;
 }
+
+import type { CalcBasis } from './saju';
+
+export function describeBasis(basis: CalcBasis) {
+  const parts = [
+    basis.longitudeCorrection ? '진태양시 보정 −30분' : '표준시 그대로',
+    basis.jasi === 'yajasi' ? '야자시' : '조자시',
+    ...basis.notes.filter((n) => !n.startsWith('진태양시')),
+  ];
+  return parts.join(' · ');
+}
