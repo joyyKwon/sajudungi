@@ -52,7 +52,7 @@ export default function MyPage() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Card style={styles.profileCard}>
-          <Mascot pose="front" width={64} />
+          <Mascot pose={saju.dayGanElement} width={72} />
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{profile.name}님</Text>
             <Text style={styles.birth}>{birth}</Text>

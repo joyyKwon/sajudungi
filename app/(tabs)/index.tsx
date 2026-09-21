@@ -52,7 +52,7 @@ export default function Home() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.mascotCard]}>
-          <Mascot pose="front" width={52} />
+          <Mascot pose={saju.dayGanElement} width={56} />
           <View style={{ flex: 1 }}>
             <Text style={styles.mascotLabel}>오늘의 한마디</Text>
             <Text style={styles.mascotText}>{god.today}</Text>
