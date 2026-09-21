@@ -6,7 +6,8 @@ import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { Profile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
-import { Pillar as EnginePillar, PillarKey, SajuResult, WuXing } from '../../lib/saju';
+import { DaeunEntry, GAN_ELEMENT, Pillar as EnginePillar, PillarKey, SajuResult, WuXing, ZHI_ELEMENT } from '../../lib/saju';
+import { FlowInfo, daeunFlow, yearFlow } from '../../lib/flow';
 import { interpretPillar } from '../../lib/interpret';
 import { describeBasis, formatBirthDate, formatTime } from '../../lib/format';
 
@@ -88,6 +89,34 @@ function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
   return list;
 }
 
+const flowToUi = (info: FlowInfo, calcReason: string): Pillar => ({
+  key: info.label,
+  label: info.label,
+  stem: info.ganZhi[0],
+  branch: info.ganZhi[1],
+  stemColor: ELEMENT_COLOR[GAN_ELEMENT[info.ganZhi[0]]],
+  branchColor: ELEMENT_COLOR[ZHI_ELEMENT[info.ganZhi[1]]],
+  hangul: info.hangul,
+  calcReason,
+  interpretation: [info.title, info.body, info.note].join('\n\n'),
+});
+
+function buildSeun(saju: SajuResult, year: number): Pillar {
+  const info = yearFlow(saju, year);
+  return flowToUi(
+    info,
+    `세운은 그 해의 간지예요. ${year}년의 간지는 ${info.hangul}(${info.ganZhi})이고, 사주에서 해는 입춘을 기준으로 바뀌어요.\n\n${info.basis} 이 관계가 그 해의 분위기를 읽는 열쇠예요.`,
+  );
+}
+
+function buildDaeun(saju: SajuResult, entry: DaeunEntry): Pillar {
+  const info = daeunFlow(saju, entry);
+  return flowToUi(
+    info,
+    `대운은 10년마다 바뀌는 큰 흐름이에요. 태어난 날에서 가장 가까운 절기까지의 날짜를 3일=1년으로 환산해 시작 나이(${entry.startAge}세, 세는나이)를 정하고, 월주에서 순서대로(또는 거꾸로) 이어가요. 이 대운은 ${entry.startYear}~${entry.endYear}년, ${entry.hangul}(${entry.ganZhi})예요.\n\n${info.basis}`,
+  );
+}
+
 export default function Manseryeok() {
   const profile = useRequiredProfile();
   const saju = useSaju();
@@ -96,12 +125,14 @@ export default function Manseryeok() {
 
   const currentYear = new Date().getFullYear();
   const DAEUN = saju.daeun.slice(0, 9).map((d) => ({
+    entry: d,
     age: `${d.startAge}세`,
     ganji: d.ganZhi,
     active: currentYear >= d.startYear && currentYear <= d.endYear,
   }));
   const SEUN = saju.seun.map((s) => ({
     year: String(s.year),
+    yearNum: s.year,
     ganji: s.ganZhi,
     active: s.year === currentYear,
   }));
@@ -130,7 +161,7 @@ export default function Manseryeok() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hint}>
           <Icon name="search" size={14} color={colors.red} />
-          <Text style={styles.hintText}>표를 눌러서 자세히 알아보세요</Text>
+          <Text style={styles.hintText}>표와 대운·세운을 눌러서 자세히 알아보세요</Text>
         </View>
 
         <View>
@@ -186,10 +217,10 @@ export default function Manseryeok() {
           <Text style={styles.sectionLabel}>대운 (10년 단위)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cycleRow}>
             {DAEUN.map((d) => (
-              <View key={d.age} style={[styles.cycleChip, d.active && styles.cycleChipActive]}>
+              <Pressable key={d.age} onPress={() => openSheet(buildDaeun(saju, d.entry))} style={[styles.cycleChip, d.active && styles.cycleChipActive]}>
                 <Text style={[styles.cycleTop, d.active && { color: colors.redSoft }]}>{d.age}</Text>
                 <Text style={[styles.cycleGanji, d.active && { color: colors.white }]}>{d.ganji}</Text>
-              </View>
+              </Pressable>
             ))}
           </ScrollView>
         </View>
@@ -198,10 +229,10 @@ export default function Manseryeok() {
           <Text style={styles.sectionLabel}>세운 (연 단위)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cycleRow}>
             {SEUN.map((s) => (
-              <View key={s.year} style={[styles.cycleChip, s.active && { backgroundColor: colors.amberSoft, borderColor: colors.amberSoft }]}>
+              <Pressable key={s.year} onPress={() => openSheet(buildSeun(saju, s.yearNum))} style={[styles.cycleChip, s.active && { backgroundColor: colors.amberSoft, borderColor: colors.amberSoft }]}>
                 <Text style={[styles.cycleTop, s.active && { color: '#7a5a1f', fontWeight: '700' }]}>{s.year}</Text>
                 <Text style={styles.cycleGanji}>{s.ganji}</Text>
-              </View>
+              </Pressable>
             ))}
           </ScrollView>
         </View>

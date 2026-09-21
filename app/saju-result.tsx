@@ -12,6 +12,9 @@ import { elementCounts } from '../lib/saju';
 import { ELEMENT_ORDER, elementInsights } from '../lib/interpret';
 import { ILGAN } from '../lib/content/ilgan';
 import { ILJU } from '../lib/content/ilju';
+import { GROUP_INFO, GROUP_ORDER } from '../lib/content/tenGodGroups';
+import { analyzeGroups, tenGodGroupCounts } from '../lib/tenGodGroups';
+import { daeunFlow, daeunState, yearFlow } from '../lib/flow';
 
 const ELEMENT_COLOR = {
   wood: colors.wood,
@@ -35,6 +38,14 @@ function SajuResult() {
   const counts = elementCounts(saju);
   const maxCount = Math.max(...Object.values(counts), 1);
   const insights = elementInsights(saju);
+  const groupCounts = tenGodGroupCounts(saju);
+  const groupMax = Math.max(...GROUP_ORDER.map((g) => groupCounts[g]), 1);
+  const groupAnalysis = analyzeGroups(groupCounts);
+  const now = new Date();
+  const thisYear = yearFlow(saju, now.getFullYear());
+  const daeun = daeunState(saju, now);
+  const currentDaeun = daeun.current ? daeunFlow(saju, daeun.current) : null;
+  const nextDaeun = daeun.next ? daeunFlow(saju, daeun.next) : null;
   const ilganTag = `일간 ${saju.day.gan}(${ELEMENT_HANGUL[saju.dayGanElement]}) 기준`;
 
   const pillars = [
@@ -103,6 +114,45 @@ function SajuResult() {
         </Card>
 
         <Card>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>올해의 흐름</Text>
+            <Text style={styles.tag}>
+              {thisYear.label} · {thisYear.hangul}
+            </Text>
+          </View>
+          <Text style={styles.flowTitle}>{thisYear.title}</Text>
+          <Text style={styles.sectionBody}>{thisYear.body}</Text>
+          <Text style={[styles.sectionBody, { marginTop: 8 }]}>{thisYear.note}</Text>
+          <Text style={styles.footnote}>{thisYear.basis}</Text>
+        </Card>
+
+        <Card>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>지금의 대운</Text>
+            {currentDaeun && (
+              <Text style={styles.tag}>
+                {currentDaeun.label} · {currentDaeun.hangul}
+              </Text>
+            )}
+          </View>
+          {currentDaeun ? (
+            <>
+              <Text style={styles.flowTitle}>{currentDaeun.title}</Text>
+              <Text style={styles.sectionBody}>{currentDaeun.body}</Text>
+              <Text style={[styles.sectionBody, { marginTop: 8 }]}>{currentDaeun.note}</Text>
+              <Text style={styles.footnote}>{currentDaeun.basis}</Text>
+            </>
+          ) : (
+            <Text style={styles.sectionBody}>아직 첫 대운이 시작되기 전이에요. 대운은 {daeun.next?.startAge}세부터 시작해요.</Text>
+          )}
+          {nextDaeun && (
+            <Text style={[styles.sectionBody, { marginTop: 10 }]}>
+              다음 대운은 {nextDaeun.label.replace(' 대운', '')}에 {nextDaeun.hangul}로 바뀌어요 · {nextDaeun.ganGod}의 시기예요.
+            </Text>
+          )}
+        </Card>
+
+        <Card>
           <Text style={styles.sectionTitle}>오행 분포</Text>
           <View style={styles.bars}>
             {ELEMENT_ORDER.map((el) => (
@@ -121,6 +171,30 @@ function SajuResult() {
             </Text>
           ))}
           <Text style={styles.footnote}>겉으로 드러난 글자 기준이며, 지지 속 숨은 기운(지장간)은 포함하지 않았어요.</Text>
+        </Card>
+
+        <Card>
+          <Text style={styles.sectionTitle}>십신 분포</Text>
+          <View style={styles.bars}>
+            {GROUP_ORDER.map((g) => (
+              <View key={g} style={styles.barRow}>
+                <Text style={styles.groupLabel}>{g}</Text>
+                <View style={styles.barTrack}>
+                  <View style={[styles.barFill, { width: `${(groupCounts[g] / groupMax) * 100}%`, backgroundColor: groupAnalysis.dominant.includes(g) ? colors.red : colors.amberDeep }]} />
+                </View>
+                <Text style={styles.barCount}>{groupCounts[g]}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={[styles.sectionBody, { marginTop: 10 }]}>{groupAnalysis.headline}</Text>
+          {groupAnalysis.insights.map((line) => (
+            <Text key={line} style={[styles.sectionBody, { marginTop: 8 }]}>
+              {line}
+            </Text>
+          ))}
+          <Text style={styles.footnote}>
+            일간을 뺀 천간과 지지 속 본기운 기준이에요. {GROUP_ORDER.map((g) => `${g}=${GROUP_INFO[g].meaning}`).join(' · ')}
+          </Text>
         </Card>
 
         <Card>
@@ -190,6 +264,8 @@ const styles = StyleSheet.create({
   barLabel: { width: 20, fontFamily: fonts.display, fontSize: 15, color: colors.ink, textAlign: 'center' },
   barTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.line, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 5 },
+  groupLabel: { width: 34, fontFamily: fonts.display, fontSize: 14, color: colors.ink },
+  flowTitle: { fontFamily: fonts.body, fontSize: 13.5, fontWeight: '700', color: colors.red, marginBottom: 6, lineHeight: 20 },
   barCount: { width: 16, fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, textAlign: 'right' },
   footnote: { fontFamily: fonts.body, fontSize: 11, color: colors.inkFaint, marginTop: 10, lineHeight: 16 },
   disclaimer: { fontFamily: fonts.body, fontSize: 11.5, color: colors.inkSoft, textAlign: 'center', lineHeight: 17, paddingHorizontal: spacing.md },
