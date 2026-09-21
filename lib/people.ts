@@ -171,3 +171,11 @@ export function relationCounts(people: Person[]): Record<Relation, number> {
   for (const p of people) if (p.relation) out[p.relation] += 1;
   return out;
 }
+
+/** Most recently opened people (never "나"), for the quick switcher. */
+export function recentPeople(people: Person[], limit: number): Person[] {
+  return people
+    .filter((p) => !p.isSelf)
+    .sort(byRecent)
+    .slice(0, Math.max(0, limit));
+}

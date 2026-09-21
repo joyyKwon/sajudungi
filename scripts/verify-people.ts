@@ -1,4 +1,5 @@
 import {
+  recentPeople,
   Person, PersonInput, RELATIONS, addPerson, findSelf, groupPeople, isPerson, markViewed, parsePeople,
   personFromLegacyProfile, relationCounts, removePerson, resolveActive, toggleFavorite, updatePerson, upsertSelf,
 } from '../lib/people';
@@ -84,6 +85,12 @@ ok('legacy junk rejected', personFromLegacyProfile(null) === null && personFromL
 const before = JSON.stringify(calculateSaju(birth, { longitudeCorrection: true, jasi: 'yajasi' }));
 const after = JSON.stringify(calculateSaju(list.find((p) => p.id === 'p3')!, { longitudeCorrection: true, jasi: 'yajasi' }));
 ok('calculateSaju works on a Person', before === after);
+
+// ---- quick switcher ----
+const rp = recentPeople(list, 2);
+ok('recentPeople: no self, newest first, limited', rp.length === 2 && rp.every((p) => !p.isSelf) && rp[0].id === 'p2' && rp[1].id === 'p1', rp.map((p) => p.id));
+ok('recentPeople limit 0 / empty', recentPeople(list, 0).length === 0 && recentPeople([], 3).length === 0);
+ok('recentPeople does not reorder the input', list[0].isSelf);
 
 // ---- list row labels ----
 ok('shortBirthDate solar', shortBirthDate({ year: 1995, month: 6, day: 5, calendarType: 'solar' }) === '1995.06.05');

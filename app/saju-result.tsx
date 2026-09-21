@@ -63,7 +63,7 @@ function SajuResult() {
           <Pressable onPress={() => router.back()} hitSlop={12}>
             <Icon name="back" size={22} color={colors.ink} />
           </Pressable>
-          <Text style={styles.topbarTitle}>내 사주풀이</Text>
+          <Text style={styles.topbarTitle}>{profile.isSelf ? '내 사주풀이' : `${profile.name}님의 사주풀이`}</Text>
         </View>
         <Pressable
           hitSlop={12}

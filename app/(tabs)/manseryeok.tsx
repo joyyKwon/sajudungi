@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, Modal } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Modal, Alert } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, fonts } from '../../theme';
 import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
-import { Profile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
+import { Profile, useProfile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
+import { PersonSwitcher } from '../../components/PersonSwitcher';
 import { useContent } from '../../context/ContentContext';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { DaeunEntry, GAN_ELEMENT, Pillar as EnginePillar, PillarKey, SajuResult, WuXing, ZHI_ELEMENT } from '../../lib/saju';
@@ -121,6 +123,7 @@ function buildDaeun(saju: SajuResult, entry: DaeunEntry): Pillar {
 export default function Manseryeok() {
   const profile = useRequiredProfile();
   const saju = useSaju();
+  const { toggleFavorite, removePerson } = useProfile();
   const { content } = useContent();
   const [basisOpen, setBasisOpen] = useState(false);
   const pillars = useMemo(() => buildPillars(profile, saju), [profile, saju, content]);
@@ -155,9 +158,7 @@ export default function Manseryeok() {
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.topbar}>
         <Text style={styles.topbarTitle}>만세력</Text>
-        <Pressable onPress={() => setBasisOpen(true)} hitSlop={12}>
-          <Icon name="info" size={20} color="#6b5a45" />
-        </Pressable>
+        <PersonSwitcher />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -202,6 +203,44 @@ export default function Manseryeok() {
             )}
           </View>
         </View>
+
+        {!profile.isSelf && (
+          <View style={styles.personCard}>
+            <View style={styles.rowBetween}>
+              <Text style={styles.personCardTitle}>메모</Text>
+              <Pressable hitSlop={10} onPress={() => router.push({ pathname: '/info-input', params: { id: profile.id } })} accessibilityLabel="정보 수정">
+                <Icon name="pencil" size={16} color={colors.inkSoft} />
+              </Pressable>
+            </View>
+            <Text style={profile.memo ? styles.personMemo : styles.personMemoEmpty}>{profile.memo || '메모가 없어요'}</Text>
+            <Pressable style={styles.resultBtn} onPress={() => router.push('/saju-result')}>
+              <Text style={styles.resultBtnText}>사주풀이 보기</Text>
+            </Pressable>
+            <View style={styles.rowBetween}>
+              <Pressable style={styles.personAction} onPress={() => toggleFavorite(profile.id)} hitSlop={8}>
+                <Icon name={profile.favorite ? 'starFilled' : 'star'} size={18} color={profile.favorite ? colors.amberDeep : colors.inkFaint} />
+                <Text style={styles.personActionText}>{profile.favorite ? '즐겨찾기 해제' : '즐겨찾기에 추가'}</Text>
+              </Pressable>
+              <View style={styles.personAction}>
+                <Pressable hitSlop={8} onPress={() => router.push({ pathname: '/info-input', params: { id: profile.id } })}>
+                  <Text style={styles.personActionText}>정보 수정</Text>
+                </Pressable>
+                <Text style={styles.personActionText}>·</Text>
+                <Pressable
+                  hitSlop={8}
+                  onPress={() =>
+                    Alert.alert(`${profile.name}님을 삭제할까요?`, '저장된 정보와 메모가 이 기기에서 삭제돼요. 되돌릴 수 없어요.', [
+                      { text: '취소', style: 'cancel' },
+                      { text: '삭제', style: 'destructive', onPress: () => removePerson(profile.id) },
+                    ])
+                  }
+                >
+                  <Text style={[styles.personActionText, { color: colors.red }]}>삭제</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        )}
 
         <View style={styles.elementsCard}>
           <Mascot pose="elements" width={88} />
@@ -298,6 +337,14 @@ const styles = StyleSheet.create({
   glyph: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   glyphText: { fontFamily: fonts.display, fontSize: 18, fontWeight: '700' },
   pillarHangul: { fontFamily: fonts.body, fontSize: 10.5, color: colors.inkSoft },
+  personCard: { backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg, padding: 14, gap: 10 },
+  personCardTitle: { fontFamily: fonts.body, fontSize: 13, fontWeight: '700', color: colors.ink },
+  personMemo: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.ink },
+  personMemoEmpty: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.inkFaint },
+  resultBtn: { height: 48, borderRadius: radius.lg, backgroundColor: colors.amberDeep, alignItems: 'center', justifyContent: 'center' },
+  resultBtnText: { fontFamily: fonts.body, fontSize: 15, fontWeight: '700', color: colors.ink },
+  personAction: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  personActionText: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft },
   elementsCard: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.amberSoft, borderRadius: radius.lg, padding: 12 },
   elementRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot: { width: 8, height: 8, borderRadius: 4 },

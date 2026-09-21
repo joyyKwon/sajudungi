@@ -7,6 +7,7 @@ import { Card } from '../../components/Card';
 import { Icon, IconName } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { useProfile, useSaju } from '../../context/ProfileContext';
+import { PersonSwitcher } from '../../components/PersonSwitcher';
 import { dailyFlow } from '../../lib/daily';
 import { useContent } from '../../context/ContentContext';
 
@@ -19,8 +20,8 @@ type MenuItem = {
   onPress?: () => void;
 };
 
-const MENU: MenuItem[] = [
-  { icon: 'book', title: '사주풀이', subtitle: '내 사주팔자 기본 해석 보기', onPress: () => router.push('/saju-result') },
+const buildMenu = (subject: string): MenuItem[] => [
+  { icon: 'book', title: '사주풀이', subtitle: `${subject} 사주팔자 기본 해석 보기`, onPress: () => router.push('/saju-result') },
   { icon: 'calendar', title: '만세력', subtitle: '원국표, 대운·세운 상세 보기', onPress: () => router.push('/(tabs)/manseryeok') },
   { icon: 'book', title: '사주공부', subtitle: '사주둥이와 기초부터 배워요', badge: { label: 'NEW', tone: 'new' }, onPress: () => router.push('/(tabs)/lessons') },
   { icon: 'user', title: '궁합', subtitle: '우리 둘의 인연 알아보기', badge: { label: '준비중', tone: 'soon' }, disabled: true },
@@ -34,17 +35,19 @@ export default function Home() {
   const flow = useMemo(() => dailyFlow(saju, options), [saju, options, todayKey]);
   const { content } = useContent();
   const god = content.TEN_GODS[flow.god];
+  const own = profile!.isSelf;
+  const MENU = buildMenu(own ? '내' : `${profile!.name}님의`);
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>안녕하세요</Text>
-          <Text style={styles.name}>{profile!.name}님</Text>
+        <View style={{ flexShrink: 1 }}>
+          <Text style={styles.greeting}>{own ? '안녕하세요' : '보고 있는 사주'}</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {profile!.name}님
+          </Text>
         </View>
-        <Pressable onPress={() => router.push('/(tabs)/mypage')} hitSlop={12}>
-          <Icon name="user" size={22} color="#6b5a45" />
-        </Pressable>
+        <PersonSwitcher />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -63,7 +66,7 @@ export default function Home() {
           </Text>
           <Text style={styles.cardBody}>{god.meaning}</Text>
           <Text style={styles.flowBasis}>
-            내 일간 {saju.dayGan} 기준으로 오늘의 천간 {flow.pillar.gan}은 {flow.god}이에요
+            {own ? '내' : `${profile!.name}님의`} 일간 {saju.dayGan} 기준으로 오늘의 천간 {flow.pillar.gan}은 {flow.god}이에요
           </Text>
         </Card>
 
