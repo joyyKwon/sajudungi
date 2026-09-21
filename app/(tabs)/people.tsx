@@ -28,7 +28,7 @@ export default function PeopleScreen() {
 
   const open = (p: Person) => {
     setActive(p.isSelf ? null : p.id);
-    router.navigate('/(tabs)/manseryeok');
+    router.navigate('/(tabs)');
   };
   const edit = (p: Person) => (p.isSelf ? router.push('/info-input') : router.push({ pathname: '/info-input', params: { id: p.id } }));
   const confirmRemove = (p: Person) =>
