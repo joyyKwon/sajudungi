@@ -18,13 +18,13 @@ export default function MyPage() {
   const profile = useRequiredMe();
   const saju = useMySaju();
   const { completed, resetProgress } = useProgress();
-  const { resetProfile } = useProfile();
+  const { resetProfile, people } = useProfile();
   const [basisOpen, setBasisOpen] = useState(false);
 
   const confirmDelete = () =>
     Alert.alert(
       '내 정보를 삭제할까요?',
-      '이름, 생년월일시, 학습 진도, 설정이 이 기기에서 모두 삭제돼요. 삭제한 정보는 되돌릴 수 없어요.',
+      `내 정보${people.length > 1 ? `와 사주 목록에 저장한 ${people.length - 1}명` : ''}, 학습 진도, 설정이 이 기기에서 모두 삭제돼요. 삭제한 정보는 되돌릴 수 없어요.`,
       [
         { text: '취소', style: 'cancel' },
         {

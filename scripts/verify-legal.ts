@@ -27,8 +27,8 @@ for (const id of ['terms', 'privacy', 'notice'] as const) {
   ok(`${id} text clean`, !/undefined|NaN|\[object|null/.test(text));
   ok(`${id} sections non-empty`, doc.sections.every((s) => s.heading.trim() && s.body.length > 0 && s.body.every((l) => l.trim().length > 0)));
 }
-ok('privacy covers required topics', ['항목', '보유', '파기', '제3자', '권리', '책임자', '만 14세', '권익침해 구제', '118', '개정 이력'].every((k) => JSON.stringify(LEGAL_DOCS.privacy).includes(k)));
-ok('terms cover required topics', ['목적', '약관의 효력', '책임의 제한', '준거법', '만 14세', '개정 이력'].every((k) => JSON.stringify(LEGAL_DOCS.terms).includes(k)));
+ok('privacy covers required topics', ['항목', '보유', '파기', '제3자', '권리', '책임자', '만 14세', '권익침해 구제', '118', '개정 이력', '다른 사람의 정보', '메모', '사주 목록'].every((k) => JSON.stringify(LEGAL_DOCS.privacy).includes(k)));
+ok('terms cover required topics', ['목적', '약관의 효력', '책임의 제한', '준거법', '만 14세', '개정 이력', '다른 사람의 정보', '동의를 받아야'].every((k) => JSON.stringify(LEGAL_DOCS.terms).includes(k)));
 
 // Privacy sections are numbered 1..N without gaps
 const nums = LEGAL_DOCS.privacy.sections.map((s) => parseInt(s.heading, 10));
