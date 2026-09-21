@@ -1,4 +1,4 @@
-import { GAN_HANGUL, PillarKey, SajuResult, WuXing, ZHI_HANGUL, ZHI_MAIN_GAN, elementCounts, pillarsOf, tenGodOf } from './saju';
+import { GAN_ELEMENT, GAN_HANGUL, PillarKey, SajuResult, WuXing, ZHI_ELEMENT, ZHI_HANGUL, ZHI_MAIN_GAN, elementCounts, pillarsOf, tenGodOf } from './saju';
 import { TEN_GODS } from './content/tenGods';
 import { ILGAN } from './content/ilgan';
 import { ILJU } from './content/ilju';
@@ -6,19 +6,12 @@ import { PILLAR_INFO } from './content/pillars';
 import { ELEMENT_BALANCED, ELEMENT_LACKING, ELEMENT_STRONG } from './content/elements';
 import { ELEMENT_HANGUL } from './sajuContent';
 
-const GAN_ELEMENT: Record<string, WuXing> = {
-  甲: 'wood', 乙: 'wood', 丙: 'fire', 丁: 'fire', 戊: 'earth', 己: 'earth', 庚: 'metal', 辛: 'metal', 壬: 'water', 癸: 'water',
-};
-const ZHI_ELEMENT: Record<string, WuXing> = {
-  寅: 'wood', 卯: 'wood', 巳: 'fire', 午: 'fire', 辰: 'earth', 戌: 'earth', 丑: 'earth', 未: 'earth', 申: 'metal', 酉: 'metal', 亥: 'water', 子: 'water',
-};
-
 const hasFinalConsonant = (word: string) => {
   const code = word.charCodeAt(word.length - 1) - 0xac00;
   return code >= 0 && code <= 11171 && code % 28 !== 0;
 };
 /** 이에요 / 예요 attached to a Korean word. */
-const iyeyo = (word: string) => (hasFinalConsonant(word) ? '이에요' : '예요');
+export const iyeyo = (word: string) => (hasFinalConsonant(word) ? '이에요' : '예요');
 
 export const ELEMENT_ORDER: WuXing[] = ['wood', 'fire', 'earth', 'metal', 'water'];
 

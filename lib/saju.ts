@@ -83,7 +83,7 @@ export const ZHI_HANGUL: Record<string, string> = {
   午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
 };
 
-const GAN_ELEMENT: Record<string, WuXing> = {
+export const GAN_ELEMENT: Record<string, WuXing> = {
   甲: 'wood', 乙: 'wood',
   丙: 'fire', 丁: 'fire',
   戊: 'earth', 己: 'earth',
@@ -91,13 +91,22 @@ const GAN_ELEMENT: Record<string, WuXing> = {
   壬: 'water', 癸: 'water',
 };
 
-const ZHI_ELEMENT: Record<string, WuXing> = {
+export const ZHI_ELEMENT: Record<string, WuXing> = {
   寅: 'wood', 卯: 'wood',
   巳: 'fire', 午: 'fire',
   辰: 'earth', 戌: 'earth', 丑: 'earth', 未: 'earth',
   申: 'metal', 酉: 'metal',
   亥: 'water', 子: 'water',
 };
+
+export function ganZhiHangul(ganZhi: string) {
+  return `${GAN_HANGUL[ganZhi[0]]}${ZHI_HANGUL[ganZhi[1]]}`;
+}
+
+/** 간지 of a calendar year (입춘-based); June 1st sits safely inside either boundary. */
+export function yearGanZhi(year: number): string {
+  return Solar.fromYmdHms(year, 6, 1, 12, 0, 0).getLunar().getEightChar().getYear();
+}
 
 function buildPillar(gan: string, zhi: string): Pillar {
   return {
@@ -174,19 +183,14 @@ export function calculateSaju(input: BirthInput, options: SajuOptions = DEFAULT_
       startYear: dy.getStartYear(),
       endYear: dy.getEndYear(),
       ganZhi: dy.getGanZhi(),
-      hangul: `${GAN_HANGUL[dy.getGanZhi()[0]]}${ZHI_HANGUL[dy.getGanZhi()[1]]}`,
+      hangul: ganZhiHangul(dy.getGanZhi()),
     }));
 
   const currentYear = new Date().getFullYear();
   const seun: SeunEntry[] = [];
-  for (let y = currentYear - 1; y <= currentYear + 2; y++) {
-    // June 1st is always safely inside the 입춘-based year boundary either way.
-    const yearGanZhi = Solar.fromYmdHms(y, 6, 1, 12, 0, 0).getLunar().getEightChar().getYear();
-    seun.push({
-      year: y,
-      ganZhi: yearGanZhi,
-      hangul: `${GAN_HANGUL[yearGanZhi[0]]}${ZHI_HANGUL[yearGanZhi[1]]}`,
-    });
+  for (let sy = currentYear - 1; sy <= currentYear + 2; sy++) {
+    const gz = yearGanZhi(sy);
+    seun.push({ year: sy, ganZhi: gz, hangul: ganZhiHangul(gz) });
   }
 
   return {
