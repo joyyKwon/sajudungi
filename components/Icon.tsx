@@ -16,7 +16,14 @@ export type IconName =
   | 'share'
   | 'info'
   | 'clock'
-  | 'calendarDate';
+  | 'calendarDate'
+  | 'users'
+  | 'plus'
+  | 'chevronDown'
+  | 'star'
+  | 'starFilled'
+  | 'pencil'
+  | 'trash';
 
 type Props = {
   name: IconName;
@@ -137,6 +144,49 @@ export function Icon({ name, size = 20, color = '#3B2A1D', strokeWidth = 1.8 }: 
         <Svg width={size} height={size} viewBox="0 0 24 24">
           <Rect x={4} y={5} width={16} height={15} rx={2} {...common} />
           <Path d="M4 9h16M8 3v4M16 3v4" {...common} />
+        </Svg>
+      );
+    case 'users':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Circle cx={9} cy={9} r={3.2} {...common} />
+          <Path d="M3 19c.5-3.2 3-4.8 6-4.8s5.500 1.600 6 4.800" {...common} />
+          <Path d="M16 6a3 3 0 0 1 0 6M18 14.400c1.900.6 3.100 2 3.500 4.600" {...common} />
+        </Svg>
+      );
+    case 'plus':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Path d="M12 5v14M5 12h14" {...common} />
+        </Svg>
+      );
+    case 'chevronDown':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Path d="M6 9l6 6 6-6" {...common} />
+        </Svg>
+      );
+    case 'star':
+    case 'starFilled':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Path
+            d="M12 3.500l2.700 5.500 6 .9-4.400 4.200 1 6-5.300-2.800-5.400 2.800 1-6L3.300 9.900l6-.9z"
+            {...common}
+            fill={name === 'starFilled' ? color : 'none'}
+          />
+        </Svg>
+      );
+    case 'pencil':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Path d="M4 20l4-1 11-11-3-3L5 16z" {...common} />
+        </Svg>
+      );
+    case 'trash':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" {...common} />
         </Svg>
       );
     default:

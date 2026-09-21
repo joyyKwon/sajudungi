@@ -2,7 +2,8 @@ import {
   Person, PersonInput, RELATIONS, addPerson, findSelf, groupPeople, isPerson, markViewed, parsePeople,
   personFromLegacyProfile, relationCounts, removePerson, resolveActive, toggleFavorite, updatePerson, upsertSelf,
 } from '../lib/people';
-import { calculateSaju } from '../lib/saju';
+import { calculateSaju, DEFAULT_SAJU_OPTIONS } from '../lib/saju';
+import { shortBirthDate, summarizePerson } from '../lib/personSummary';
 
 let pass = 0, fail = 0;
 const ok = (label: string, cond: boolean, extra?: unknown) => (cond ? pass++ : (fail++, console.log('FAIL', label, extra ?? '')));
@@ -83,6 +84,14 @@ ok('legacy junk rejected', personFromLegacyProfile(null) === null && personFromL
 const before = JSON.stringify(calculateSaju(birth, { longitudeCorrection: true, jasi: 'yajasi' }));
 const after = JSON.stringify(calculateSaju(list.find((p) => p.id === 'p3')!, { longitudeCorrection: true, jasi: 'yajasi' }));
 ok('calculateSaju works on a Person', before === after);
+
+// ---- list row labels ----
+ok('shortBirthDate solar', shortBirthDate({ year: 1995, month: 6, day: 5, calendarType: 'solar' }) === '1995.06.05');
+ok('shortBirthDate lunar / leap', shortBirthDate({ year: 2017, month: 5, day: 14, calendarType: 'lunar' }) === '2017.05.14 (음)' && shortBirthDate({ year: 2017, month: 5, day: 14, calendarType: 'lunar', isLeapMonth: true }) === '2017.05.14 (음·윤)');
+const sum = summarizePerson(list.find((p) => p.id === 'p3')!, DEFAULT_SAJU_OPTIONS)!;
+const ref = calculateSaju(birth, DEFAULT_SAJU_OPTIONS);
+ok('summary matches the engine', sum.gan === ref.dayGan && sum.iljuHanja === ref.day.ganZhi && sum.iljuHangul === ref.day.hangul && sum.ganElement === ref.dayGanElement);
+ok('summary is null for an impossible lunar date', summarizePerson({ ...list[1], calendarType: 'lunar', year: 2017, month: 4, day: 5, isLeapMonth: true }, DEFAULT_SAJU_OPTIONS) === null);
 
 console.log(`verify-people: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
