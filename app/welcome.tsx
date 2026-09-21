@@ -5,6 +5,8 @@ import { colors, radius, spacing, fonts } from '../theme';
 import { Button } from '../components/Button';
 import { useProfile } from '../context/ProfileContext';
 
+// Start screen for people without a saved profile. Kept off "/" because the home tab
+// (app/(tabs)/index.tsx) owns that path; redirecting to "/" would loop.
 export default function Onboarding() {
   const { profile } = useProfile();
   if (profile) return <Redirect href="/(tabs)" />;
@@ -75,7 +77,17 @@ export default function Onboarding() {
           {/* MOCK: should open email/password sign-up form + Supabase auth.signUp, not jump straight to info-input. */}
           <Button label="이메일로 시작하기" onPress={() => router.push('/info-input')} />
 
-          <Text style={styles.fineprint}>가입 시 이용약관 및 개인정보처리방침에 동의합니다</Text>
+          <Text style={styles.fineprint}>
+            시작하기 전에{' '}
+            <Text style={styles.link} onPress={() => router.push('/legal/terms')}>
+              이용약관
+            </Text>
+            과{' '}
+            <Text style={styles.link} onPress={() => router.push('/legal/privacy')}>
+              개인정보처리방침
+            </Text>
+            을 확인해주세요
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -116,6 +128,7 @@ const styles = StyleSheet.create({
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginVertical: spacing.xs },
   dividerLine: { flex: 1, height: 1, backgroundColor: colors.line },
   dividerText: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft },
+  link: { textDecorationLine: 'underline', color: colors.red },
   fineprint: {
     fontFamily: fonts.body,
     fontSize: 11,
