@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   profile: 'sajudungi.profile.v1',
   options: 'sajudungi.options.v1',
   lessons: 'sajudungi.lessons.v1',
+  content: 'sajudungi.content.v1',
 } as const;
 
 export async function loadJson<T>(key: string): Promise<T | null> {
