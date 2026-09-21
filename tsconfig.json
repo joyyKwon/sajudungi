@@ -5,6 +5,7 @@
   },
   "exclude": [
     "node_modules",
-    "scripts/gen-content-seed.ts"
+    "scripts/gen-content-seed.ts",
+    "scripts/verify-legal.ts"
   ]
 }
