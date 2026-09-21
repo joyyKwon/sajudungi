@@ -45,3 +45,6 @@ mockups/*.html
 # generated native folders
 /ios
 /android
+
+# raw artwork the user drops in for processing; only derived files go to assets/
+/assets-incoming/
