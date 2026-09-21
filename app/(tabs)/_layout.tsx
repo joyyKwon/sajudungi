@@ -23,7 +23,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: '홈', tabBarIcon: TabIcon('home') }} />
-      <Tabs.Screen name="people" options={{ title: '사주 목록', tabBarIcon: TabIcon('users') }} />
+      <Tabs.Screen name="people" options={{ title: '사주목록', tabBarIcon: TabIcon('users') }} />
       <Tabs.Screen name="manseryeok" options={{ title: '만세력', tabBarIcon: TabIcon('calendar') }} />
       <Tabs.Screen name="lessons" options={{ title: '학습', tabBarIcon: TabIcon('book') }} />
       <Tabs.Screen name="mypage" options={{ title: '마이', tabBarIcon: TabIcon('user') }} />
