@@ -27,7 +27,9 @@ export function Mascot({ pose, width, style }: Props) {
   return (
     <Image
       source={source}
-      style={[{ width, aspectRatio: ratio }, style]}
+      // Explicit height instead of aspectRatio: with a large source image the ratio-based size was ignored
+      // when the mascot sat in a centered column (사주 목록 empty state) and it rendered at full size.
+      style={[{ width, height: width / ratio }, style]}
       resizeMode="contain"
     />
   );
