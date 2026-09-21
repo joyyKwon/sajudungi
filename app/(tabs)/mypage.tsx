@@ -9,14 +9,14 @@ import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { useProgress } from '../../context/ProgressContext';
-import { useProfile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
+import { useProfile, useRequiredMe, useMySaju } from '../../context/ProfileContext';
 import { LESSONS } from '../../lib/lessons';
 import { STORAGE_KEYS, removeKeys } from '../../lib/storage';
 import { describeBasis, formatBirthDate, formatTime } from '../../lib/format';
 
 export default function MyPage() {
-  const profile = useRequiredProfile();
-  const saju = useSaju();
+  const profile = useRequiredMe();
+  const saju = useMySaju();
   const { completed, resetProgress } = useProgress();
   const { resetProfile } = useProfile();
   const [basisOpen, setBasisOpen] = useState(false);

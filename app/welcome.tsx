@@ -8,8 +8,8 @@ import { useProfile } from '../context/ProfileContext';
 // Start screen for people without a saved profile. Kept off "/" because the home tab
 // (app/(tabs)/index.tsx) owns that path; redirecting to "/" would loop.
 export default function Onboarding() {
-  const { profile } = useProfile();
-  if (profile) return <Redirect href="/(tabs)" />;
+  const { me } = useProfile();
+  if (me) return <Redirect href="/(tabs)" />;
 
   return (
     <View style={styles.screen}>

@@ -7,7 +7,7 @@ import { Button } from '../components/Button';
 import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
 import { DateTimePickerSheet } from '../components/DateTimePickerSheet';
-import { Profile, useProfile } from '../context/ProfileContext';
+import { PersonInput, useProfile } from '../context/ProfileContext';
 import type { Gender, CalendarType } from '../lib/saju';
 import { formatBirthDate, formatTime } from '../lib/format';
 import { validateLunarDate } from '../lib/lunar';
@@ -19,7 +19,8 @@ const DEFAULT_DATE = new Date(1995, 5, 15);
 const DEFAULT_TIME = new Date(2000, 0, 1, 12, 0);
 
 export default function InfoInput() {
-  const { profile, setProfile } = useProfile();
+  // This screen is about "나": the first input creates it, later visits edit it.
+  const { me: profile, setProfile } = useProfile();
   const editing = !!profile;
   const [name, setName] = useState(profile?.name ?? '');
   const [birthDate, setBirthDate] = useState<Date | null>(profile ? new Date(profile.year, profile.month - 1, profile.day) : null);
@@ -162,7 +163,7 @@ export default function InfoInput() {
             if (!timeUnknown && !birthTime) return Alert.alert('태어난 시간을 선택하거나 "몰라요"를 체크해주세요');
             if (!editing && !(agreedAge && agreedTerms)) return Alert.alert('필수 항목에 동의해주세요', '만 14세 이상 확인과 이용약관·개인정보처리방침 동의가 필요해요.');
 
-            const next: Profile = {
+            const next: PersonInput = {
               name: name.trim(),
               gender,
               calendarType,

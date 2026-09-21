@@ -24,8 +24,8 @@ const ELEMENT_COLOR = {
 } as const;
 
 export default function SajuResultScreen() {
-  const { profile } = useProfile();
-  if (!profile) return <Redirect href="/welcome" />;
+  const { me } = useProfile();
+  if (!me) return <Redirect href="/welcome" />;
   return <SajuResult />;
 }
 

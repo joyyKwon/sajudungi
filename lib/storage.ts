@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const STORAGE_KEYS = {
+  /** Pre-사주 목록 single profile; migrated into `people` on first launch. */
   profile: 'sajudungi.profile.v1',
+  people: 'sajudungi.people.v1',
   options: 'sajudungi.options.v1',
   lessons: 'sajudungi.lessons.v1',
   content: 'sajudungi.content.v1',

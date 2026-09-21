@@ -9,8 +9,8 @@ function TabIcon(name: IconName) {
 }
 
 export default function TabsLayout() {
-  const { profile } = useProfile();
-  if (!profile) return <Redirect href="/welcome" />;
+  const { me } = useProfile();
+  if (!me) return <Redirect href="/welcome" />;
 
   return (
     <Tabs
