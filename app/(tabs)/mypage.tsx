@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
@@ -9,15 +9,35 @@ import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { useProgress } from '../../context/ProgressContext';
-import { useRequiredProfile, useSaju } from '../../context/ProfileContext';
+import { useProfile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
 import { LESSONS } from '../../lib/lessons';
+import { STORAGE_KEYS, removeKeys } from '../../lib/storage';
 import { describeBasis, formatBirthDate, formatTime } from '../../lib/format';
 
 export default function MyPage() {
   const profile = useRequiredProfile();
   const saju = useSaju();
-  const { completed } = useProgress();
+  const { completed, resetProgress } = useProgress();
+  const { resetProfile } = useProfile();
   const [basisOpen, setBasisOpen] = useState(false);
+
+  const confirmDelete = () =>
+    Alert.alert(
+      '내 정보를 삭제할까요?',
+      '이름, 생년월일시, 학습 진도, 설정이 이 기기에서 모두 삭제돼요. 삭제한 정보는 되돌릴 수 없어요.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: () => {
+            removeKeys([STORAGE_KEYS.consent]);
+            resetProgress();
+            resetProfile(); // route guards send the user back to the start screen
+          },
+        },
+      ],
+    );
 
   const doneCount = LESSONS.filter((l) => completed.includes(l.id)).length;
   const birth = `${formatBirthDate(profile)} ${
@@ -46,6 +66,13 @@ export default function MyPage() {
           <Row label="내 정보 수정" onPress={() => router.push('/info-input')} />
           <Row label="계산 기준" value={describeBasis(saju.basis)} onPress={() => setBasisOpen(true)} />
           <Row label="학습 진도" value={`${doneCount}/${LESSONS.length}`} onPress={() => router.push('/(tabs)/lessons')} last />
+        </View>
+
+        <View style={styles.list}>
+          <Row label="서비스 이용 안내" onPress={() => router.push('/legal/notice')} />
+          <Row label="이용약관" onPress={() => router.push('/legal/terms')} />
+          <Row label="개인정보처리방침" onPress={() => router.push('/legal/privacy')} />
+          <Row label="내 정보 삭제" onPress={confirmDelete} last />
         </View>
 
         <Text style={styles.notice}>

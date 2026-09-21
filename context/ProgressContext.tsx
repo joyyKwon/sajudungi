@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { STORAGE_KEYS, loadJson, saveJson } from '../lib/storage';
+import { STORAGE_KEYS, loadJson, removeKeys, saveJson } from '../lib/storage';
 
 type ProgressContextValue = {
   completed: string[];
   markDone: (lessonId: string) => void;
+  /** Clears learning progress from this device. */
+  resetProgress: () => void;
   ready: boolean;
 };
 
@@ -31,6 +33,10 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           saveJson(STORAGE_KEYS.lessons, next);
           return next;
         }),
+      resetProgress: () => {
+        setCompleted([]);
+        removeKeys([STORAGE_KEYS.lessons]);
+      },
       ready,
     }),
     [completed, ready],

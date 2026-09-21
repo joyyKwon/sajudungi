@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { BirthInput, Gender, CalendarType, DEFAULT_SAJU_OPTIONS, SajuOptions, SajuResult, calculateSaju } from '../lib/saju';
-import { STORAGE_KEYS, loadJson, saveJson } from '../lib/storage';
+import { STORAGE_KEYS, loadJson, removeKeys, saveJson } from '../lib/storage';
 
 export type Profile = BirthInput & { name: string };
 
@@ -10,6 +10,8 @@ type ProfileContextValue = {
   setProfile: (profile: Profile) => void;
   options: SajuOptions;
   setOptions: (options: SajuOptions) => void;
+  /** Removes the saved profile and settings from this device. */
+  resetProfile: () => void;
   /** True once saved data has been read from storage. */
   ready: boolean;
 };
@@ -60,6 +62,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setOptions: (next) => {
         setOptionsState(next);
         saveJson(STORAGE_KEYS.options, next);
+      },
+      resetProfile: () => {
+        setProfileState(null);
+        setOptionsState(DEFAULT_SAJU_OPTIONS);
+        removeKeys([STORAGE_KEYS.profile, STORAGE_KEYS.options]);
       },
       ready,
     }),

@@ -11,6 +11,8 @@ import { Profile, useProfile } from '../context/ProfileContext';
 import type { Gender, CalendarType } from '../lib/saju';
 import { formatBirthDate, formatTime } from '../lib/format';
 import { validateLunarDate } from '../lib/lunar';
+import { LEGAL_VERSION } from '../lib/legal';
+import { STORAGE_KEYS, saveJson } from '../lib/storage';
 
 const MIN_DATE = new Date(1900, 0, 1);
 const DEFAULT_DATE = new Date(1995, 5, 15);
@@ -29,6 +31,8 @@ export default function InfoInput() {
   const [calendarType, setCalendarType] = useState<CalendarType>(profile?.calendarType ?? 'solar');
   const [timeUnknown, setTimeUnknown] = useState(profile ? profile.hour === null : false);
   const [isLeapMonth, setIsLeapMonth] = useState(profile?.isLeapMonth ?? false);
+  const [agreedAge, setAgreedAge] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
@@ -117,6 +121,36 @@ export default function InfoInput() {
             <Text style={styles.checkboxLabel}>태어난 시간을 몰라요</Text>
           </Pressable>
         </Field>
+
+        {!editing && (
+          <View style={styles.consentBox}>
+            <Pressable style={styles.checkboxRow} onPress={() => setAgreedAge((v) => !v)}>
+              <View style={[styles.checkbox, agreedAge && styles.checkboxChecked]}>
+                {agreedAge && <Icon name="check" size={12} color={colors.white} strokeWidth={3} />}
+              </View>
+              <Text style={styles.checkboxLabel}>(필수) 만 14세 이상이에요</Text>
+            </Pressable>
+            <View style={styles.checkboxRow}>
+              <Pressable hitSlop={8} onPress={() => setAgreedTerms((v) => !v)}>
+                <View style={[styles.checkbox, agreedTerms && styles.checkboxChecked]}>
+                  {agreedTerms && <Icon name="check" size={12} color={colors.white} strokeWidth={3} />}
+                </View>
+              </Pressable>
+              <Text style={styles.checkboxLabel} onPress={() => setAgreedTerms((v) => !v)}>
+                (필수){' '}
+                <Text style={styles.consentLink} onPress={() => router.push('/legal/terms')}>
+                  이용약관
+                </Text>
+                과{' '}
+                <Text style={styles.consentLink} onPress={() => router.push('/legal/privacy')}>
+                  개인정보처리방침
+                </Text>
+                에 동의해요
+              </Text>
+            </View>
+            <Text style={styles.fieldHint}>입력한 정보는 이 기기에만 저장되고 서버로 보내지 않아요.</Text>
+          </View>
+        )}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -126,6 +160,7 @@ export default function InfoInput() {
             if (!name.trim()) return Alert.alert('이름(닉네임)을 입력해주세요');
             if (!birthDate) return Alert.alert('생년월일을 선택해주세요');
             if (!timeUnknown && !birthTime) return Alert.alert('태어난 시간을 선택하거나 "몰라요"를 체크해주세요');
+            if (!editing && !(agreedAge && agreedTerms)) return Alert.alert('필수 항목에 동의해주세요', '만 14세 이상 확인과 이용약관·개인정보처리방침 동의가 필요해요.');
 
             const next: Profile = {
               name: name.trim(),
@@ -145,6 +180,7 @@ export default function InfoInput() {
             }
 
             // MOCK: profile is stored on-device only (AsyncStorage). Sync to Supabase once accounts exist.
+            if (!editing) saveJson(STORAGE_KEYS.consent, { version: LEGAL_VERSION, agreedAt: new Date().toISOString() });
             setProfile(next);
             router.replace('/(tabs)');
           }}
@@ -257,5 +293,7 @@ const styles = StyleSheet.create({
   checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   checkboxChecked: { backgroundColor: colors.red, borderColor: colors.red },
   checkboxLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft },
+  consentBox: { gap: 2, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.line, borderRadius: radius.md, paddingHorizontal: 16, paddingVertical: 10 },
+  consentLink: { textDecorationLine: 'underline', color: colors.red },
   footer: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xxl },
 });
