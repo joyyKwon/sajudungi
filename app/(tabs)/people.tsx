@@ -153,7 +153,7 @@ export default function PeopleScreen() {
 
       <Pressable style={styles.fab} onPress={() => router.push({ pathname: '/info-input', params: { add: '1' } })}>
         <Icon name="plus" size={18} color={colors.white} strokeWidth={2.4} />
-        <Text style={styles.fabText}>사주 추가</Text>
+        <Text style={styles.fabText}>추가</Text>
       </Pressable>
     </SafeAreaView>
   );

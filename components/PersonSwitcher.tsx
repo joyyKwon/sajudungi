@@ -105,7 +105,7 @@ export function PersonSwitcher() {
 
           <Pressable onPress={() => go(() => router.push({ pathname: '/info-input', params: { add: '1' } }))} style={styles.addBtn}>
             <Icon name="plus" size={18} color={colors.red} strokeWidth={2.4} />
-            <Text style={styles.addText}>사주 추가</Text>
+            <Text style={styles.addText}>추가</Text>
           </Pressable>
         </View>
       </Modal>
