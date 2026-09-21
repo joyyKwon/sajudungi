@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '../theme';
 import { ProfileProvider, useProfile } from '../context/ProfileContext';
 import { ProgressProvider, useProgress } from '../context/ProgressContext';
+import { ContentProvider, useContent } from '../context/ContentContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,7 +17,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ProfileProvider>
         <ProgressProvider>
-          <AppShell />
+          <ContentProvider>
+            <AppShell />
+          </ContentProvider>
         </ProgressProvider>
       </ProfileProvider>
     </SafeAreaProvider>
@@ -29,7 +32,8 @@ function AppShell() {
   const [fontsLoaded] = useFonts({ GowunBatang_400Regular, GowunBatang_700Bold, GowunDodum_400Regular });
   const { ready: profileReady } = useProfile();
   const { ready: progressReady } = useProgress();
-  const ready = fontsLoaded && profileReady && progressReady;
+  const { ready: contentReady } = useContent();
+  const ready = fontsLoaded && profileReady && progressReady && contentReady;
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();

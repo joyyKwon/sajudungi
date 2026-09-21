@@ -8,7 +8,7 @@ import { Icon, IconName } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { useProfile, useSaju } from '../../context/ProfileContext';
 import { dailyFlow } from '../../lib/daily';
-import { TEN_GODS } from '../../lib/content/tenGods';
+import { useContent } from '../../context/ContentContext';
 
 type MenuItem = {
   icon: IconName;
@@ -32,7 +32,8 @@ export default function Home() {
   const saju = useSaju();
   const todayKey = new Date().toDateString();
   const flow = useMemo(() => dailyFlow(saju, options), [saju, options, todayKey]);
-  const god = TEN_GODS[flow.god];
+  const { content } = useContent();
+  const god = content.TEN_GODS[flow.god];
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>

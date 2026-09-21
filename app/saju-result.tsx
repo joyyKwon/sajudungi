@@ -10,9 +10,8 @@ import { ELEMENT_HANGUL, ELEMENT_HANJA } from '../lib/sajuContent';
 import { describeBasis } from '../lib/format';
 import { elementCounts } from '../lib/saju';
 import { ELEMENT_ORDER, elementInsights } from '../lib/interpret';
-import { ILGAN } from '../lib/content/ilgan';
-import { ILJU } from '../lib/content/ilju';
-import { GROUP_INFO, GROUP_ORDER } from '../lib/content/tenGodGroups';
+import { useContent } from '../context/ContentContext';
+import { GROUP_ORDER } from '../lib/content/tenGodGroups';
 import { analyzeGroups, tenGodGroupCounts } from '../lib/tenGodGroups';
 import { daeunFlow, daeunState, yearFlow } from '../lib/flow';
 
@@ -34,6 +33,8 @@ function SajuResult() {
   const profile = useRequiredProfile();
   const saju = useSaju();
 
+  const { content } = useContent();
+  const { ILGAN, ILJU, GROUP_INFO } = content;
   const ilgan = ILGAN[saju.day.gan];
   const counts = elementCounts(saju);
   const maxCount = Math.max(...Object.values(counts), 1);

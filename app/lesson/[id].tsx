@@ -7,6 +7,7 @@ import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { useProgress } from '../../context/ProgressContext';
 import { useProfile, useSaju } from '../../context/ProfileContext';
+import { useContent } from '../../context/ContentContext';
 import { LESSONS } from '../../lib/lessons';
 import { resolveCard } from '../../lib/lessonCards';
 
@@ -20,6 +21,7 @@ function LessonDetail() {
   const lesson = LESSONS.find((l) => l.id === id) ?? LESSONS[0];
   const { markDone } = useProgress();
   const saju = useSaju();
+  useContent(); // re-render when server text updates
   const [index, setIndex] = useState(0);
 
   const card = lesson.cards[index];

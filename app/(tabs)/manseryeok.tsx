@@ -5,6 +5,7 @@ import { colors, radius, spacing, fonts } from '../../theme';
 import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { Profile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
+import { useContent } from '../../context/ContentContext';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { DaeunEntry, GAN_ELEMENT, Pillar as EnginePillar, PillarKey, SajuResult, WuXing, ZHI_ELEMENT } from '../../lib/saju';
 import { FlowInfo, daeunFlow, yearFlow } from '../../lib/flow';
@@ -120,8 +121,9 @@ function buildDaeun(saju: SajuResult, entry: DaeunEntry): Pillar {
 export default function Manseryeok() {
   const profile = useRequiredProfile();
   const saju = useSaju();
+  const { content } = useContent();
   const [basisOpen, setBasisOpen] = useState(false);
-  const pillars = useMemo(() => buildPillars(profile, saju), [profile, saju]);
+  const pillars = useMemo(() => buildPillars(profile, saju), [profile, saju, content]);
 
   const currentYear = new Date().getFullYear();
   const DAEUN = saju.daeun.slice(0, 9).map((d) => ({

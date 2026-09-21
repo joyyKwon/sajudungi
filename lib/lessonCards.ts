@@ -1,4 +1,4 @@
-import { GAN_IMAGE } from './content/gan';
+import { getContent } from './contentStore';
 import { ELEMENT_HANGUL, ELEMENT_HANJA } from './sajuContent';
 import { elementCounts, pillarsOf, tenGodOf } from './saju';
 import type { SajuResult } from './saju';
@@ -10,6 +10,7 @@ const ELEMENT_ORDER = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
 // Personal cards are filled from the user's own chart.
 export function resolveCard(card: LessonCard, saju: SajuResult): { body: string; chips?: LessonChip[] } {
   if (card.personal === 'dayGan') {
+    const { GAN_IMAGE } = getContent();
     const g = saju.day.gan;
     const yin = '乙丁己辛癸'.includes(g) ? '음' : '양';
     return {

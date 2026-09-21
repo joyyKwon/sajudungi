@@ -1,9 +1,5 @@
 import { GAN_ELEMENT, GAN_HANGUL, PillarKey, SajuResult, WuXing, ZHI_ELEMENT, ZHI_HANGUL, ZHI_MAIN_GAN, elementCounts, pillarsOf, tenGodOf } from './saju';
-import { TEN_GODS } from './content/tenGods';
-import { ILGAN } from './content/ilgan';
-import { ILJU } from './content/ilju';
-import { PILLAR_INFO } from './content/pillars';
-import { ELEMENT_BALANCED, ELEMENT_LACKING, ELEMENT_STRONG } from './content/elements';
+import { getContent } from './contentStore';
 import { ELEMENT_HANGUL } from './sajuContent';
 
 const hasFinalConsonant = (word: string) => {
@@ -17,6 +13,7 @@ export const ELEMENT_ORDER: WuXing[] = ['wood', 'fire', 'earth', 'metal', 'water
 
 /** Explanation for one pillar: what it stands for and why it reads the way it does. */
 export function interpretPillar(saju: SajuResult, key: PillarKey): string {
+  const { TEN_GODS, ILGAN, ILJU, PILLAR_INFO } = getContent();
   const entry = pillarsOf(saju).find((p) => p.key === key);
   if (!entry) return '';
   const { pillar } = entry;
@@ -47,6 +44,7 @@ export function interpretPillar(saju: SajuResult, key: PillarKey): string {
 
 /** Comments on missing (0) or strong (3+) elements among the visible characters. */
 export function elementInsights(saju: SajuResult): string[] {
+  const { ELEMENT_BALANCED, ELEMENT_LACKING, ELEMENT_STRONG } = getContent();
   const counts = elementCounts(saju);
   const lines: string[] = [];
   for (const el of ELEMENT_ORDER) {

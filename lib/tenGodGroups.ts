@@ -1,6 +1,6 @@
 import { SajuResult, ZHI_MAIN_GAN, pillarsOf, tenGodOf } from './saju';
-import { TEN_GODS } from './content/tenGods';
-import { GROUP_BALANCED, GROUP_INFO, GROUP_ORDER, TenGodGroup } from './content/tenGodGroups';
+import { GROUP_ORDER, TenGodGroup } from './content/tenGodGroups';
+import { getContent } from './contentStore';
 
 export type GroupCounts = Record<TenGodGroup, number>;
 
@@ -10,6 +10,7 @@ export type GroupCounts = Record<TenGodGroup, number>;
  * stem (본기) of every branch. The day stem itself ("나") is not counted.
  */
 export function tenGodGroupCounts(saju: SajuResult): GroupCounts {
+  const { TEN_GODS } = getContent();
   const counts: GroupCounts = { 비겁: 0, 식상: 0, 재성: 0, 관성: 0, 인성: 0 };
   for (const { key, pillar } of pillarsOf(saju)) {
     if (key !== 'day') counts[TEN_GODS[tenGodOf(saju.dayGan, pillar.gan)].group] += 1;
@@ -26,6 +27,7 @@ export type GroupAnalysis = {
 };
 
 export function analyzeGroups(counts: GroupCounts): GroupAnalysis {
+  const { GROUP_BALANCED, GROUP_INFO } = getContent();
   const max = Math.max(...GROUP_ORDER.map((g) => counts[g]));
   const dominant = max >= 2 ? GROUP_ORDER.filter((g) => counts[g] === max) : [];
   const balanced = dominant.length === 0 || dominant.length === GROUP_ORDER.length;
