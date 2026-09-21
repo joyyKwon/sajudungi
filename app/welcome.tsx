@@ -1,5 +1,6 @@
-import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { Redirect, router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, TextPath, Text as SvgText } from 'react-native-svg';
 import { colors, radius, spacing, fonts } from '../theme';
 import { Button } from '../components/Button';
@@ -9,16 +10,16 @@ import { useProfile } from '../context/ProfileContext';
 // (app/(tabs)/index.tsx) owns that path; redirecting to "/" would loop.
 export default function Onboarding() {
   const { me } = useProfile();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   if (me) return <Redirect href="/(tabs)" />;
 
   return (
     <View style={styles.screen}>
-      <Image source={require('../assets/mascot/mascot_hero.jpg')} style={styles.hero} resizeMode="cover" />
-
-      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.body, { paddingTop: insets.top + 52 }]} showsVerticalScrollIndicator={false}>
+        {/* The wordmark, tagline and character are all part of this picture. */}
+        <Image source={require('../assets/mascot/welcome_art.jpg')} style={{ width, height: (width * 681) / 941 }} resizeMode="contain" />
         <View style={styles.brandBlock}>
-          <Text style={styles.title}>사주둥이</Text>
-          <Text style={styles.tagline}>천년의 지혜, 쉽고 친근하게{'\n'}사주둥이와 함께 알아가요</Text>
           <View style={styles.chipRow}>
             <Chip label="사주풀이" />
             <Chip label="만세력" />
@@ -103,20 +104,11 @@ function Chip({ label }: { label: string }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  hero: { width: '100%', height: 250, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
-  body: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.xxl, flexGrow: 1 },
-  brandBlock: { alignItems: 'center', marginTop: spacing.xl },
-  title: { fontFamily: fonts.display, fontSize: 32, color: colors.ink },
-  tagline: {
-    fontFamily: fonts.body,
-    fontSize: 14.5,
-    color: colors.inkSoft,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-    lineHeight: 21,
-  },
-  chipRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
+  // Same color as the background of the start-screen picture (assets/mascot/welcome_art.jpg), so the picture blends in.
+  screen: { flex: 1, backgroundColor: '#FDF6E4' },
+  body: { paddingBottom: spacing.xxl, flexGrow: 1 },
+  brandBlock: { alignItems: 'center', paddingHorizontal: spacing.xxl, marginTop: spacing.sm },
+  chipRow: { flexDirection: 'row', gap: spacing.sm },
   chip: {
     paddingVertical: spacing.sm,
     paddingHorizontal: 14,
@@ -124,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.amberSoft,
   },
   chipText: { fontFamily: fonts.body, fontSize: 13, color: colors.inkSoft, fontWeight: '700' },
-  actions: { marginTop: 'auto', paddingTop: spacing.xl, gap: spacing.md },
+  actions: { marginTop: 'auto', paddingTop: spacing.xl, paddingHorizontal: spacing.xxl, gap: spacing.md },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginVertical: spacing.xs },
   dividerLine: { flex: 1, height: 1, backgroundColor: colors.line },
   dividerText: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft },
