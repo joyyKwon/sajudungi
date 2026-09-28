@@ -6,6 +6,7 @@ import { PILLAR_INFO } from './pillars';
 import { DAEUN_THEME, YEAR_THEME } from './flow';
 import { GROUP_BALANCED, GROUP_INFO } from './tenGodGroups';
 import { GAN_IMAGE } from './gan';
+import { ZHI_CHUNG, ZHI_HAP, ZHI_RELATION_NONE } from './zhiRelations';
 
 /**
  * Every piece of interpretation text the app can show. The files in this folder
@@ -25,6 +26,9 @@ export const BUNDLED_CONTENT = {
   GROUP_INFO,
   GROUP_BALANCED,
   GAN_IMAGE,
+  ZHI_HAP,
+  ZHI_CHUNG,
+  ZHI_RELATION_NONE,
 };
 
 export type ContentBundle = typeof BUNDLED_CONTENT;
