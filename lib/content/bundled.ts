@@ -7,6 +7,8 @@ import { DAEUN_THEME, MONTH_THEME, YEAR_THEME } from './flow';
 import { GROUP_BALANCED, GROUP_INFO } from './tenGodGroups';
 import { GAN_IMAGE } from './gan';
 import { ZHI_CHUNG, ZHI_HAP, ZHI_RELATION_NONE } from './zhiRelations';
+import { LOVE_BY_DAY_GOD, PERSONALITY_BY_MONTH_GOD, WEALTH_BY_JAESEONG } from './detail';
+import { SINSAL, SINSAL_NONE, SINSAL_POSITION, SINSAL_REPEATED } from './sinsal';
 
 /**
  * Every piece of interpretation text the app can show. The files in this folder
@@ -30,6 +32,13 @@ export const BUNDLED_CONTENT = {
   ZHI_HAP,
   ZHI_CHUNG,
   ZHI_RELATION_NONE,
+  PERSONALITY_BY_MONTH_GOD,
+  WEALTH_BY_JAESEONG,
+  LOVE_BY_DAY_GOD,
+  SINSAL,
+  SINSAL_POSITION,
+  SINSAL_REPEATED,
+  SINSAL_NONE,
 };
 
 export type ContentBundle = typeof BUNDLED_CONTENT;

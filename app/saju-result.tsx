@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router } from 'expo-router';
@@ -15,6 +16,9 @@ import { GROUP_ORDER } from '../lib/content/tenGodGroups';
 import { analyzeGroups, tenGodGroupCounts } from '../lib/tenGodGroups';
 import { daeunFlow, daeunState, yearFlow } from '../lib/flow';
 import { zhiRelationsOf } from '../lib/zhiRelations';
+import { DetailLine, loveDetail, personalityDetail, wealthDetail } from '../lib/detail';
+import { POSITION_PILLAR_LABEL, POSITION_ZHI_LABEL, SinsalHit, sinsalOf } from '../lib/sinsal';
+import type { SinsalKey } from '../lib/content/sinsal';
 
 const ELEMENT_COLOR = {
   wood: colors.wood,
@@ -35,7 +39,7 @@ function SajuResult() {
   const saju = useSaju();
 
   const { content } = useContent();
-  const { ILGAN, ILJU, GROUP_INFO, ZHI_RELATION_NONE } = content;
+  const { ILGAN, ILJU, GROUP_INFO, ZHI_RELATION_NONE, SINSAL_POSITION, SINSAL_REPEATED, SINSAL_NONE } = content;
   const ilgan = ILGAN[saju.day.gan];
   const counts = elementCounts(saju);
   const maxCount = Math.max(...Object.values(counts), 1);
@@ -50,6 +54,14 @@ function SajuResult() {
   const nextDaeun = daeun.next ? daeunFlow(saju, daeun.next) : null;
   const ilganTag = `일간 ${saju.day.gan}(${ELEMENT_HANGUL[saju.dayGanElement]}) 기준`;
   const zhiRelations = zhiRelationsOf(saju);
+  const sinsal = sinsalOf(saju);
+  const [openSinsal, setOpenSinsal] = useState<SinsalKey | null>(null);
+  const shownSinsal: SinsalHit | undefined = sinsal.find((s) => s.key === openSinsal) ?? sinsal[0];
+  const details: { title: string; base: string; extra: DetailLine }[] = [
+    { title: '성격', base: ilgan.personality, extra: personalityDetail(saju) },
+    { title: '재물운', base: ilgan.wealth, extra: wealthDetail(saju) },
+    { title: '애정운', base: ilgan.love, extra: loveDetail(saju) },
+  ];
 
   const pillars = [
     { label: '년주', pillar: saju.year },
@@ -223,29 +235,59 @@ function SajuResult() {
         </Card>
 
         <Card>
-          <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>성격</Text>
-            <Text style={styles.tag}>{ilganTag}</Text>
-          </View>
-          <Text style={styles.sectionBody}>{ilgan.personality}</Text>
-        </Card>
-        <Card>
-          <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>재물운</Text>
-            <Text style={styles.tag}>{ilganTag}</Text>
-          </View>
-          <Text style={styles.sectionBody}>{ilgan.wealth}</Text>
-        </Card>
-        <Card>
-          <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>애정운</Text>
-            <Text style={styles.tag}>{ilganTag}</Text>
-          </View>
-          <Text style={styles.sectionBody}>{ilgan.love}</Text>
+          <Text style={styles.sectionTitle}>나의 신살</Text>
+          {shownSinsal ? (
+            <>
+              <View style={styles.sinsalTags}>
+                {sinsal.map((s) => {
+                  const active = s.key === shownSinsal.key;
+                  return (
+                    <Pressable key={s.key} onPress={() => setOpenSinsal(s.key)} style={[styles.sinsalTag, active && styles.sinsalTagActive]}>
+                      <Text style={[styles.sinsalTagText, active && styles.sinsalTagTextActive]}>
+                        {s.info.name}
+                        {s.positions.length > 1 ? ` ×${s.positions.length}` : ''}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={styles.relationRow}>
+                <Text style={styles.flowTitle}>
+                  {shownSinsal.info.name}({shownSinsal.info.hanja}) · {shownSinsal.info.title}
+                </Text>
+                <Text style={styles.sectionBody}>{shownSinsal.info.body}</Text>
+                <Text style={[styles.sectionBody, { marginTop: 8 }]}>
+                  어디에:{' '}
+                  {shownSinsal.positions
+                    .map((p) => `${(shownSinsal.byPillar ? POSITION_PILLAR_LABEL : POSITION_ZHI_LABEL)[p]}(${SINSAL_POSITION[p]})`)
+                    .join(' · ')}
+                  {shownSinsal.positions.length > 1 ? ` — ${SINSAL_REPEATED}` : ''}
+                </Text>
+                <Text style={styles.footnote}>근거: {shownSinsal.basis}</Text>
+              </View>
+            </>
+          ) : (
+            <Text style={styles.sectionBody}>{SINSAL_NONE}</Text>
+          )}
+          <Text style={styles.footnote}>
+            신살은 유파마다 보는 기준이 조금씩 달라요. 태그를 누르면 설명이 바뀌어요.{saju.hour ? '' : ' 태어난 시간을 몰라 시지는 빼고 봤어요.'}
+          </Text>
         </Card>
 
+        {details.map((d) => (
+          <Card key={d.title}>
+            <View style={styles.rowBetween}>
+              <Text style={styles.sectionTitle}>{d.title}</Text>
+              <Text style={styles.tag}>{ilganTag}</Text>
+            </View>
+            <Text style={styles.sectionBody}>{d.base}</Text>
+            <Text style={[styles.sectionBody, { marginTop: 8 }]}>{d.extra.text}</Text>
+            <Text style={styles.footnote}>근거: {d.extra.basis}</Text>
+          </Card>
+        ))}
+
         <Text style={styles.disclaimer}>
-          사주 해석은 관점에 따라 달라질 수 있는 참고용이에요. 일간을 중심으로 한 경향이니 재미로 즐겨주세요.
+          사주 해석은 관점에 따라 달라질 수 있는 참고용이에요. 타고난 경향을 풀어본 것이니 재미로 즐겨주세요.
         </Text>
 
         <Pressable style={styles.ctaCard} onPress={() => router.push('/(tabs)/manseryeok')}>
@@ -290,6 +332,11 @@ const styles = StyleSheet.create({
   barTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.line, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 5 },
   groupLabel: { width: 34, fontFamily: fonts.display, fontSize: 14, color: colors.ink },
+  sinsalTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
+  sinsalTag: { paddingVertical: 6, paddingHorizontal: 11, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line },
+  sinsalTagActive: { backgroundColor: colors.redSoft, borderColor: colors.red },
+  sinsalTagText: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft },
+  sinsalTagTextActive: { color: colors.red, fontWeight: '700' },
   relationRow: { backgroundColor: colors.white, borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: colors.line },
   flowTitle: { fontFamily: fonts.body, fontSize: 13.5, fontWeight: '700', color: colors.red, marginBottom: 6, lineHeight: 20 },
   barCount: { width: 16, fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, textAlign: 'right' },

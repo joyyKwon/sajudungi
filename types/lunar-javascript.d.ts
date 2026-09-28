@@ -33,6 +33,11 @@ declare module 'lunar-javascript' {
     getDaYun(): GanZhi[];
   }
 
+  export const LunarUtil: {
+    /** 순중공망 of a 간지, e.g. '甲子' → '戌亥'. */
+    getXunKong(ganZhi: string): string;
+  };
+
   export class EightChar {
     getYear(): string;
     getYearGan(): string;
