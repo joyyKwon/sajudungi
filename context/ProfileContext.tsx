@@ -39,6 +39,8 @@ type ProfileContextValue = {
   setOptions: (options: SajuOptions) => void;
   /** Removes every saved person and the settings from this device. */
   resetProfile: () => void;
+  /** Replaces the whole 사주 목록 at once (used by lib/sync.ts when merging with the server). */
+  replaceAllPeople: (people: Person[]) => void;
   /** True once saved data has been read from storage. */
   ready: boolean;
 };
@@ -104,6 +106,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         if (id === activeId) setActiveId(null);
       },
       toggleFavorite: (id) => commit(toggleFavoriteIn(people, id)),
+      replaceAllPeople: (next) => commit(next),
       options,
       setOptions: (next) => {
         setOptionsState(next);

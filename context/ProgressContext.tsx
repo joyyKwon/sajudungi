@@ -6,6 +6,8 @@ type ProgressContextValue = {
   markDone: (lessonId: string) => void;
   /** Clears learning progress from this device. */
   resetProgress: () => void;
+  /** Replaces the whole completed-lesson list at once (used by lib/sync.ts). */
+  replaceCompleted: (ids: string[]) => void;
   ready: boolean;
 };
 
@@ -36,6 +38,10 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       resetProgress: () => {
         setCompleted([]);
         removeKeys([STORAGE_KEYS.lessons]);
+      },
+      replaceCompleted: (ids) => {
+        setCompleted(ids);
+        saveJson(STORAGE_KEYS.lessons, ids);
       },
       ready,
     }),
