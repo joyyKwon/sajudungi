@@ -43,6 +43,17 @@ export type SeunEntry = {
   hangul: string;
 };
 
+export type WolunEntry = {
+  /** Calendar year and month the month starts in (Korea time): 인월 ≈ 2월 … 자월 ≈ 12월, 축월 ≈ next year's 1월. */
+  calendarYear: number;
+  month: number;
+  /** The month runs from its 절입 instant up to the next one (UTC ms). */
+  startMs: number;
+  endMs: number;
+  ganZhi: string;
+  hangul: string;
+};
+
 export type SajuOptions = {
   /** 진태양시 보정: 동경 127.5° 기준으로 −30분. 시주·일주 경계에 영향. */
   longitudeCorrection: boolean;
@@ -125,6 +136,38 @@ const BEIJING_OFFSET = 480; // lunar-javascript's solar-term tables are in China
 function solarAt(utcMs: number, offsetMinutes: number) {
   const d = new Date(utcMs + offsetMinutes * MIN);
   return Solar.fromYmdHms(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), 0);
+}
+
+// The 12 절 that open each month, from 입춘 (인월) to the following 입춘.
+// lunar-javascript names the next year's terms in pinyin.
+const MONTH_OPENING_TERMS = ['立春', '惊蛰', '清明', '立夏', '芒种', '小暑', '立秋', '白露', '寒露', '立冬', '大雪', 'XIAO_HAN', 'LI_CHUN'];
+const KST_OFFSET = 540;
+
+/** 월운: the 12 month pillars of the 사주 year starting at `year`'s 입춘. The same for everyone. */
+export function wolunOfYear(year: number): WolunEntry[] {
+  const table = Solar.fromYmdHms(year, 6, 1, 12, 0, 0).getLunar().getJieQiTable();
+  const startsMs = MONTH_OPENING_TERMS.map((name) => {
+    const s = table[name];
+    return Date.UTC(s.getYear(), s.getMonth() - 1, s.getDay(), s.getHour(), s.getMinute(), s.getSecond()) - BEIJING_OFFSET * MIN;
+  });
+  return startsMs.slice(0, 12).map((startMs, i) => {
+    const ganZhi = solarAt(startMs + MIN, BEIJING_OFFSET).getLunar().getEightChar().getMonth();
+    const kst = new Date(startMs + KST_OFFSET * MIN);
+    return {
+      calendarYear: kst.getUTCFullYear(),
+      month: kst.getUTCMonth() + 1,
+      startMs,
+      endMs: startsMs[i + 1],
+      ganZhi,
+      hangul: ganZhiHangul(ganZhi),
+    };
+  });
+}
+
+/** The 사주 year (입춘 to 입춘) containing `now`. */
+export function sajuYearOf(now: Date = new Date()): number {
+  const year = new Date(now.getTime() + KST_OFFSET * MIN).getUTCFullYear();
+  return now.getTime() < wolunOfYear(year)[0].startMs ? year - 1 : year;
 }
 
 /**

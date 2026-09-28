@@ -7,6 +7,9 @@ declare module 'lunar-javascript' {
     getYear(): number;
     getMonth(): number;
     getDay(): number;
+    getHour(): number;
+    getMinute(): number;
+    getSecond(): number;
     getLunar(): Lunar;
   }
 
@@ -14,6 +17,8 @@ declare module 'lunar-javascript' {
     static fromYmd(year: number, month: number, day: number): Lunar;
     getSolar(): Solar;
     getEightChar(): EightChar;
+    /** Solar-term instants (China Standard Time) around this lunar year, keyed by Chinese name or, outside the year, pinyin (e.g. XIAO_HAN, LI_CHUN). */
+    getJieQiTable(): Record<string, Solar>;
   }
 
   export class GanZhi {

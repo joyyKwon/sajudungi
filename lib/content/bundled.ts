@@ -3,7 +3,7 @@ import { ILJU } from './ilju';
 import { TEN_GODS } from './tenGods';
 import { ELEMENT_BALANCED, ELEMENT_LACKING, ELEMENT_STRONG } from './elements';
 import { PILLAR_INFO } from './pillars';
-import { DAEUN_THEME, YEAR_THEME } from './flow';
+import { DAEUN_THEME, MONTH_THEME, YEAR_THEME } from './flow';
 import { GROUP_BALANCED, GROUP_INFO } from './tenGodGroups';
 import { GAN_IMAGE } from './gan';
 import { ZHI_CHUNG, ZHI_HAP, ZHI_RELATION_NONE } from './zhiRelations';
@@ -22,6 +22,7 @@ export const BUNDLED_CONTENT = {
   ELEMENT_BALANCED,
   PILLAR_INFO,
   YEAR_THEME,
+  MONTH_THEME,
   DAEUN_THEME,
   GROUP_INFO,
   GROUP_BALANCED,
