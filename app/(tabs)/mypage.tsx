@@ -10,6 +10,7 @@ import { Mascot } from '../../components/Mascot';
 import { CalcBasisSheet } from '../../components/CalcBasisSheet';
 import { useProgress } from '../../context/ProgressContext';
 import { useProfile, useRequiredMe, useMySaju } from '../../context/ProfileContext';
+import { useAuth } from '../../context/AuthContext';
 import { LESSONS } from '../../lib/lessons';
 import { STORAGE_KEYS, removeKeys } from '../../lib/storage';
 import { describeBasis, formatBirthDate, formatTime } from '../../lib/format';
@@ -19,22 +20,48 @@ export default function MyPage() {
   const saju = useMySaju();
   const { completed, resetProgress } = useProgress();
   const { resetProfile, people } = useProfile();
+  const { session, email, signOut, requestAccountDeletion } = useAuth();
   const [basisOpen, setBasisOpen] = useState(false);
+
+  const wipeDevice = () => {
+    removeKeys([STORAGE_KEYS.consent]);
+    resetProgress();
+    resetProfile(); // route guards send the user back to the start screen
+  };
 
   const confirmDelete = () =>
     Alert.alert(
       '내 정보를 삭제할까요?',
-      `내 정보${people.length > 1 ? `와 사주 목록에 저장한 ${people.length - 1}명` : ''}, 학습 진도, 설정이 이 기기에서 모두 삭제돼요. 삭제한 정보는 되돌릴 수 없어요.`,
+      session
+        ? `내 정보${people.length > 1 ? `와 사주 목록에 저장한 ${people.length - 1}명` : ''}, 학습 진도, 설정이 이 기기에서 지워져요. 계정과 서버에 백업된 내용은 남아있고, 로그인하면 다시 받아올 수 있어요.`
+        : `내 정보${people.length > 1 ? `와 사주 목록에 저장한 ${people.length - 1}명` : ''}, 학습 진도, 설정이 이 기기에서 모두 삭제돼요. 삭제한 정보는 되돌릴 수 없어요.`,
+      [
+        { text: '취소', style: 'cancel' },
+        { text: '삭제', style: 'destructive', onPress: wipeDevice },
+      ],
+    );
+
+  const confirmLogout = () =>
+    Alert.alert('로그아웃할까요?', '이 기기에 남은 사주 목록과 학습 진도를 함께 지울까요? 계정의 내용은 그대로 남아요.', [
+      { text: '취소', style: 'cancel' },
+      { text: '기기 정보는 남기기', onPress: () => signOut(false) },
+      { text: '기기 정보도 지우기', style: 'destructive', onPress: () => signOut(true) },
+    ]);
+
+  const confirmAccountDeletion = () =>
+    Alert.alert(
+      '계정을 삭제할까요?',
+      '지금부터 30일 뒤에 서버에 저장된 사주 목록과 학습 진도가 완전히 삭제돼요. 그 안에 다시 로그인하면 삭제가 취소돼요.',
       [
         { text: '취소', style: 'cancel' },
         {
-          text: '삭제',
+          text: '삭제 요청',
           style: 'destructive',
-          onPress: () => {
-            removeKeys([STORAGE_KEYS.consent]);
-            resetProgress();
-            resetProfile(); // route guards send the user back to the start screen
-          },
+          onPress: () =>
+            Alert.alert('이 기기의 정보도 지울까요?', '', [
+              { text: '기기 정보는 남기기', onPress: () => requestAccountDeletion(false) },
+              { text: '기기 정보도 지우기', style: 'destructive', onPress: () => requestAccountDeletion(true) },
+            ]),
         },
       ],
     );
@@ -69,6 +96,18 @@ export default function MyPage() {
         </View>
 
         <View style={styles.list}>
+          {session ? (
+            <>
+              <StaticRow label="계정" value={email ?? ""} />
+              <Row label="로그아웃" onPress={confirmLogout} />
+              <Row label="계정 삭제" onPress={confirmAccountDeletion} last />
+            </>
+          ) : (
+            <Row label="로그인 / 회원가입" value="사주 목록을 백업할 수 있어요" onPress={() => router.push('/auth')} last />
+          )}
+        </View>
+
+        <View style={styles.list}>
           <Row label="서비스 이용 안내" onPress={() => router.push('/legal/notice')} />
           <Row label="이용약관" onPress={() => router.push('/legal/terms')} />
           <Row label="개인정보처리방침" onPress={() => router.push('/legal/privacy')} />
@@ -99,6 +138,18 @@ function Row({ label, value, onPress, last }: { label: string; value?: string; o
         <Icon name="chevronRight" size={16} color="#cbbfae" />
       </View>
     </Pressable>
+  );
+}
+
+/** A non-interactive row, e.g. showing the signed-in email — no chevron, since there's nothing to tap. */
+function StaticRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
+  return (
+    <View style={[styles.row, !last && styles.rowBorder]}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={styles.rowValue} numberOfLines={1}>
+        {value}
+      </Text>
+    </View>
   );
 }
 
