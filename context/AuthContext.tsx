@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 // mergePeopleOnLogin/mergeProgressOnLogin are pure logic (lib/syncMerge.ts) re-exported from here.
@@ -20,6 +21,8 @@ type AuthContextValue = {
   /** `needsEmailConfirmation` is true when the project requires clicking a confirmation email before the account is usable. */
   signUpWithEmail: (email: string, password: string) => Promise<AuthResult & { needsEmailConfirmation: boolean }>;
   signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
+  /** Opens 카카오/구글 login in a browser sheet; resolves once the user finishes or cancels. */
+  signInWithProvider: (provider: 'kakao' | 'google') => Promise<AuthResult>;
   /** Ends the session. `wipeDevice` also clears the local 사주 목록/진도 (offered on 로그아웃; always true for 계정 삭제). */
   signOut: (wipeDevice: boolean) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<AuthResult>;
@@ -30,17 +33,26 @@ type AuthContextValue = {
   /** Reads a sajudungi://…#access_token=…&type=recovery link (from expo-linking) and, if it's
    *  a real recovery link, opens a recovery session. Call once when the app receives such a URL. */
   handleRecoveryUrl: (url: string) => Promise<boolean>;
+  /** Fallback for when the OS hands a sajudungi://auth/callback#access_token=… link to the app
+   *  directly instead of WebBrowser.openAuthSessionAsync capturing it (signInWithProvider handles
+   *  the normal case itself). Sets the session from the link's tokens if present. */
+  completeOAuthRedirect: (url: string) => Promise<boolean>;
   /** Marks the account for deletion (30일 유예) and signs out. `wipeDevice` per the 계정 삭제 dialog. */
   requestAccountDeletion: (wipeDevice: boolean) => Promise<AuthResult>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function parseRecoveryTokens(url: string): { access_token: string; refresh_token: string } | null {
+/**
+ * Pulls `access_token`/`refresh_token` out of a Supabase auth redirect (password recovery
+ * or OAuth login both land here as `…#access_token=…&refresh_token=…[&type=recovery]`).
+ * `requireType` additionally checks the `type` param (recovery links only).
+ */
+function parseAuthTokensFromUrl(url: string, requireType?: string): { access_token: string; refresh_token: string } | null {
   const hash = url.split('#')[1];
   if (!hash) return null;
   const params = new URLSearchParams(hash);
-  if (params.get('type') !== 'recovery') return null;
+  if (requireType && params.get('type') !== requireType) return null;
   const access_token = params.get('access_token');
   const refresh_token = params.get('refresh_token');
   return access_token && refresh_token ? { access_token, refresh_token } : null;
@@ -159,11 +171,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return { error: error?.message ?? null };
       },
+      signInWithProvider: async (provider) => {
+        setBusy(true);
+        try {
+          const redirectTo = Linking.createURL('/auth/callback');
+          const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo, skipBrowserRedirect: true } });
+          if (error || !data.url) return { error: error?.message ?? '로그인 주소를 만들지 못했어요.' };
+          const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+          if (result.type !== 'success') return { error: null }; // user cancelled the sheet
+          const tokens = parseAuthTokensFromUrl(result.url);
+          if (!tokens) return { error: '로그인을 완료하지 못했어요. 다시 시도해주세요.' };
+          const { error: sessionError } = await supabase.auth.setSession(tokens);
+          return { error: sessionError?.message ?? null };
+        } finally {
+          setBusy(false);
+        }
+      },
       handleRecoveryUrl: async (url) => {
-        const tokens = parseRecoveryTokens(url);
+        const tokens = parseAuthTokensFromUrl(url, 'recovery');
         if (!tokens) return false;
         const { error } = await supabase.auth.setSession(tokens);
         if (!error) setInRecovery(true);
+        return !error;
+      },
+      completeOAuthRedirect: async (url) => {
+        const tokens = parseAuthTokensFromUrl(url);
+        if (!tokens) return false;
+        const { error } = await supabase.auth.setSession(tokens);
         return !error;
       },
       requestAccountDeletion: async (wipeDevice) => {

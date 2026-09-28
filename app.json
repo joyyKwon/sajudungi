@@ -36,7 +36,15 @@
           "resizeMode": "contain"
         }
       ],
-      "@react-native-community/datetimepicker"
-    ]
+      "@react-native-community/datetimepicker",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3e1f1c01-164c-417e-b2a9-b02b5cc19d8d"
+      }
+    },
+    "owner": "joy_yy"
   }
 }

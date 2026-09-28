@@ -38,7 +38,7 @@ function AppShell() {
   const { ready: profileReady } = useProfile();
   const { ready: progressReady } = useProgress();
   const { ready: contentReady } = useContent();
-  const { handleRecoveryUrl } = useAuth();
+  const { handleRecoveryUrl, completeOAuthRedirect } = useAuth();
   const ready = fontsLoaded && profileReady && progressReady && contentReady;
 
   useEffect(() => {
@@ -47,12 +47,16 @@ function AppShell() {
 
   // 비밀번호 재설정 메일 링크(sajudungi://auth/reset-password#access_token=…&type=recovery)를
   // 열었을 때: 토큰으로 복구 세션을 만들고 새 비밀번호 입력 화면으로 보낸다.
+  // 카카오/구글 로그인은 보통 WebBrowser.openAuthSessionAsync가 리다이렉트를 직접 가로채지만,
+  // 일부 안드로이드 환경에서는 OS가 sajudungi://auth/callback 링크를 앱에 그대로 넘길 수 있어 여기서도 처리한다.
   useEffect(() => {
-    const openIfRecovery = async (url: string | null) => {
-      if (url && (await handleRecoveryUrl(url))) router.replace('/auth/reset-password');
+    const openUrl = async (url: string | null) => {
+      if (!url) return;
+      if (await handleRecoveryUrl(url)) return router.replace('/auth/reset-password');
+      if (url.includes('/auth/callback') && (await completeOAuthRedirect(url))) router.replace('/(tabs)');
     };
-    Linking.getInitialURL().then(openIfRecovery);
-    const sub = Linking.addEventListener('url', ({ url }) => openIfRecovery(url));
+    Linking.getInitialURL().then(openUrl);
+    const sub = Linking.addEventListener('url', ({ url }) => openUrl(url));
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -1,12 +1,14 @@
-import { View, Text, StyleSheet, Alert, Platform } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, Alert, Platform, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import Svg, { Path, Circle, Text as SvgText } from 'react-native-svg';
 import { colors, spacing, fonts } from '../theme';
 import { Button } from './Button';
+import { useAuth } from '../context/AuthContext';
 
 // The same list of sign-in methods on the start screen and on 마이 > 로그인 / 회원가입.
-// Kakao/Google/Apple need their native SDKs, which only run in an EAS build (not Expo Go),
-// so for now they explain that and point to email instead of pretending to log in.
+// Apple needs Sign in with Apple, which needs a paid Apple Developer account (not bought
+// yet — 안드로이드 먼저 출시) and its own EAS build, so it stays a placeholder for now.
 const notYet = (provider: string) =>
   Alert.alert(`${provider} 로그인은 준비 중이에요`, '지금은 이메일로 가입하거나 로그인할 수 있어요.', [
     { text: '닫기', style: 'cancel' },
@@ -14,32 +16,54 @@ const notYet = (provider: string) =>
   ]);
 
 export function LoginOptions() {
+  const { signInWithProvider } = useAuth();
+  const [loading, setLoading] = useState<'kakao' | 'google' | null>(null);
+
+  const withProvider = async (provider: 'kakao' | 'google') => {
+    setLoading(provider);
+    try {
+      const { error } = await signInWithProvider(provider);
+      if (error) Alert.alert('로그인할 수 없어요', error);
+      else router.replace('/(tabs)');
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <View style={styles.wrap}>
       <Button
         variant="outline"
         label="카카오로 계속하기"
-        onPress={() => notYet('카카오')}
+        onPress={() => withProvider('kakao')}
         icon={
-          <Svg width={20} height={20} viewBox="0 0 24 24">
-            <Path
-              d="M12 3C6.9 3 3 6.4 3 10.6c0 2.7 1.7 5 4.3 6.4l-1 3.7c-.1.4.3.7.6.5l4.3-2.7c.3 0 .5.1.8.1 5.1 0 9-3.4 9-7.6S17.1 3 12 3z"
-              fill="#3c1e1e"
-            />
-          </Svg>
+          loading === 'kakao' ? (
+            <ActivityIndicator size="small" color={colors.ink} />
+          ) : (
+            <Svg width={20} height={20} viewBox="0 0 24 24">
+              <Path
+                d="M12 3C6.9 3 3 6.4 3 10.6c0 2.7 1.7 5 4.3 6.4l-1 3.7c-.1.4.3.7.6.5l4.3-2.7c.3 0 .5.1.8.1 5.1 0 9-3.4 9-7.6S17.1 3 12 3z"
+                fill="#3c1e1e"
+              />
+            </Svg>
+          )
         }
       />
       <Button
         variant="outline"
         label="Google로 계속하기"
-        onPress={() => notYet('Google')}
+        onPress={() => withProvider('google')}
         icon={
-          <Svg width={18} height={18} viewBox="0 0 24 24">
-            <Circle cx={12} cy={12} r={10} fill="none" stroke="#4a4a4a" strokeWidth={1.6} />
-            <SvgText x={12} y={16} textAnchor="middle" fontSize={12} fill="#4a4a4a">
-              G
-            </SvgText>
-          </Svg>
+          loading === 'google' ? (
+            <ActivityIndicator size="small" color={colors.ink} />
+          ) : (
+            <Svg width={18} height={18} viewBox="0 0 24 24">
+              <Circle cx={12} cy={12} r={10} fill="none" stroke="#4a4a4a" strokeWidth={1.6} />
+              <SvgText x={12} y={16} textAnchor="middle" fontSize={12} fill="#4a4a4a">
+                G
+              </SvgText>
+            </Svg>
+          )
         }
       />
       {/* Apple 로그인은 iOS 출시 때 붙인다(안드로이드 먼저 출시). */}
