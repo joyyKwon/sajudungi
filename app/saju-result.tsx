@@ -14,6 +14,7 @@ import { useContent } from '../context/ContentContext';
 import { GROUP_ORDER } from '../lib/content/tenGodGroups';
 import { analyzeGroups, tenGodGroupCounts } from '../lib/tenGodGroups';
 import { daeunFlow, daeunState, yearFlow } from '../lib/flow';
+import { zhiRelationsOf } from '../lib/zhiRelations';
 
 const ELEMENT_COLOR = {
   wood: colors.wood,
@@ -34,7 +35,7 @@ function SajuResult() {
   const saju = useSaju();
 
   const { content } = useContent();
-  const { ILGAN, ILJU, GROUP_INFO } = content;
+  const { ILGAN, ILJU, GROUP_INFO, ZHI_RELATION_NONE } = content;
   const ilgan = ILGAN[saju.day.gan];
   const counts = elementCounts(saju);
   const maxCount = Math.max(...Object.values(counts), 1);
@@ -48,6 +49,7 @@ function SajuResult() {
   const currentDaeun = daeun.current ? daeunFlow(saju, daeun.current) : null;
   const nextDaeun = daeun.next ? daeunFlow(saju, daeun.next) : null;
   const ilganTag = `일간 ${saju.day.gan}(${ELEMENT_HANGUL[saju.dayGanElement]}) 기준`;
+  const zhiRelations = zhiRelationsOf(saju);
 
   const pillars = [
     { label: '년주', pillar: saju.year },
@@ -199,6 +201,28 @@ function SajuResult() {
         </Card>
 
         <Card>
+          <Text style={styles.sectionTitle}>지지 관계 (합·충)</Text>
+          {zhiRelations.length === 0 ? (
+            <Text style={styles.sectionBody}>{ZHI_RELATION_NONE}</Text>
+          ) : (
+            <View style={{ gap: 12 }}>
+              {zhiRelations.map((r) => (
+                <View key={`${r.a}-${r.b}`} style={styles.relationRow}>
+                  <View style={styles.rowBetween}>
+                    <Text style={[styles.flowTitle, r.kind === 'chung' && { color: colors.metal }]}>{r.title}</Text>
+                    <Text style={styles.tag}>{r.label}</Text>
+                  </View>
+                  <Text style={styles.sectionBody}>{r.body}</Text>
+                  {r.transformsToLine && <Text style={[styles.sectionBody, { marginTop: 4 }]}>→ {r.transformsToLine}</Text>}
+                  <Text style={styles.footnote}>{r.pairHangul}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+          <Text style={styles.footnote}>합과 충만 봤어요. 세 글자가 만나는 삼합·방합과 형·해·파는 아직 다루지 않아요.</Text>
+        </Card>
+
+        <Card>
           <View style={styles.rowBetween}>
             <Text style={styles.sectionTitle}>성격</Text>
             <Text style={styles.tag}>{ilganTag}</Text>
@@ -266,6 +290,7 @@ const styles = StyleSheet.create({
   barTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.line, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 5 },
   groupLabel: { width: 34, fontFamily: fonts.display, fontSize: 14, color: colors.ink },
+  relationRow: { backgroundColor: colors.white, borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: colors.line },
   flowTitle: { fontFamily: fonts.body, fontSize: 13.5, fontWeight: '700', color: colors.red, marginBottom: 6, lineHeight: 20 },
   barCount: { width: 16, fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, textAlign: 'right' },
   footnote: { fontFamily: fonts.body, fontSize: 11, color: colors.inkFaint, marginTop: 10, lineHeight: 16 },
