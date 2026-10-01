@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router } from 'expo-router';
@@ -9,12 +9,12 @@ import { Mascot } from '../components/Mascot';
 import { useProfile, useRequiredProfile, useSaju } from '../context/ProfileContext';
 import { ELEMENT_HANGUL, ELEMENT_HANJA } from '../lib/sajuContent';
 import { describeBasis } from '../lib/format';
-import { GAN_ELEMENT, GAN_HANGUL, elementCounts } from '../lib/saju';
+import { GAN_ELEMENT, GAN_HANGUL, elementCounts, sajuYearOf, wolunOfYear } from '../lib/saju';
 import { ELEMENT_ORDER, elementInsights } from '../lib/interpret';
 import { useContent } from '../context/ContentContext';
 import { GROUP_ORDER } from '../lib/content/tenGodGroups';
 import { analyzeGroups, tenGodGroupCounts } from '../lib/tenGodGroups';
-import { daeunFlow, daeunState, yearFlow } from '../lib/flow';
+import { daeunFlow, daeunState, monthFlow, yearFlow } from '../lib/flow';
 import { zhiRelationsOf } from '../lib/zhiRelations';
 import { DetailLine, loveDetail, personalityDetail, wealthDetail } from '../lib/detail';
 import { POSITION_PILLAR_LABEL, POSITION_ZHI_LABEL, SinsalHit, sinsalOf } from '../lib/sinsal';
@@ -29,6 +29,21 @@ const ELEMENT_COLOR = {
   metal: colors.metal,
   water: colors.water,
 } as const;
+
+// The cards are grouped into tabs only at render time, so the grouping can change
+// (or go back to one long page) without touching the cards themselves.
+type TabKey = 'me' | 'analysis' | 'flow';
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'me', label: '나' },
+  { key: 'analysis', label: '기운 분석' },
+  { key: 'flow', label: '운의 흐름' },
+];
+
+/** "10월 8일" in Korea time. */
+const monthDay = (ms: number) => {
+  const d = new Date(ms + 9 * 3_600_000);
+  return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
+};
 
 const PRESENCE_LABEL: Record<JohuStem['presence'], string> = { visible: '원국에 있음', hidden: '지지 속에 있음', absent: '원국에 없음' };
 
@@ -62,6 +77,9 @@ function SajuResult() {
   const groupAnalysis = analyzeGroups(groupCounts);
   const now = new Date();
   const thisYear = yearFlow(saju, now.getFullYear());
+  // 월운 turns over at each 절입, so "this month" is the 절기 month containing now.
+  const thisWolun = wolunOfYear(sajuYearOf(now)).find((w) => now.getTime() >= w.startMs && now.getTime() < w.endMs);
+  const thisMonth = thisWolun ? monthFlow(saju, thisWolun) : null;
   const daeun = daeunState(saju, now);
   const currentDaeun = daeun.current ? daeunFlow(saju, daeun.current) : null;
   const nextDaeun = daeun.next ? daeunFlow(saju, daeun.next) : null;
@@ -71,6 +89,8 @@ function SajuResult() {
   const johu = johuOf(saju, now);
   const career = careerOf(saju);
   const [openSinsal, setOpenSinsal] = useState<SinsalKey | null>(null);
+  const [tab, setTab] = useState<TabKey>('me');
+  const scrollRef = useRef<ScrollView>(null);
   const shownSinsal: SinsalHit | undefined = sinsal.find((s) => s.key === openSinsal) ?? sinsal[0];
   const details: { title: string; base: string; extra: DetailLine }[] = [
     { title: '성격', base: ilgan.personality, extra: personalityDetail(saju) },
@@ -106,7 +126,24 @@ function SajuResult() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.tabs}>
+        {TABS.map((t) => (
+          <Pressable
+            key={t.key}
+            onPress={() => {
+              setTab(t.key);
+              scrollRef.current?.scrollTo({ y: 0, animated: false });
+            }}
+            style={[styles.tabItem, tab === t.key && styles.tabItemActive]}
+          >
+            <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>{t.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {tab === 'me' && (
+          <>
         <View style={styles.greetRow}>
           <Mascot pose="analyzing" width={64} />
           <Text style={styles.greetText}>{profile.name}님의 사주를 풀어봤어!</Text>
@@ -143,6 +180,11 @@ function SajuResult() {
           <Text style={styles.sectionBody}>{ILJU[saju.day.ganZhi]}</Text>
         </Card>
 
+          </>
+        )}
+
+        {tab === 'flow' && (
+          <>
         <Card>
           <View style={styles.rowBetween}>
             <Text style={styles.sectionTitle}>올해의 흐름</Text>
@@ -155,6 +197,23 @@ function SajuResult() {
           <Text style={[styles.sectionBody, { marginTop: 8 }]}>{thisYear.note}</Text>
           <Text style={styles.footnote}>{thisYear.basis}</Text>
         </Card>
+
+        {thisMonth && thisWolun && (
+          <Card>
+            <View style={styles.rowBetween}>
+              <Text style={styles.sectionTitle}>이번 달의 흐름</Text>
+              <Text style={styles.tag}>
+                {thisMonth.label} · {thisMonth.hangul}
+              </Text>
+            </View>
+            <Text style={styles.flowTitle}>{thisMonth.title}</Text>
+            <Text style={styles.sectionBody}>{thisMonth.body}</Text>
+            <Text style={[styles.sectionBody, { marginTop: 8 }]}>{thisMonth.note}</Text>
+            <Text style={styles.footnote}>
+              {thisMonth.basis} 사주의 달은 절기로 바뀌어서, 이 달은 {monthDay(thisWolun.startMs)}부터 {monthDay(thisWolun.endMs)} 전까지예요.
+            </Text>
+          </Card>
+        )}
 
         <Card>
           <View style={styles.rowBetween}>
@@ -182,6 +241,11 @@ function SajuResult() {
           )}
         </Card>
 
+          </>
+        )}
+
+        {tab === 'analysis' && (
+          <>
         <Card>
           <Text style={styles.sectionTitle}>오행 분포</Text>
           <View style={styles.bars}>
@@ -324,6 +388,11 @@ function SajuResult() {
           </Text>
         </Card>
 
+          </>
+        )}
+
+        {tab === 'me' && (
+          <>
         {details.map((d) => (
           <Card key={d.title}>
             <View style={styles.rowBetween}>
@@ -381,6 +450,8 @@ function SajuResult() {
             </>
           )}
         </Card>
+          </>
+        )}
 
         <Text style={styles.disclaimer}>
           사주 해석은 관점에 따라 달라질 수 있는 참고용이에요. 타고난 경향을 풀어본 것이니 재미로 즐겨주세요.
@@ -404,6 +475,11 @@ const styles = StyleSheet.create({
   topbarLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   topbarTitle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
   content: { paddingHorizontal: spacing.xl, paddingTop: 10, paddingBottom: spacing.xl, gap: spacing.lg },
+  tabs: { flexDirection: 'row', gap: 4, marginHorizontal: spacing.xl, marginBottom: 6, backgroundColor: '#F1E6D5', borderRadius: 12, padding: 4 },
+  tabItem: { flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: 9 },
+  tabItemActive: { backgroundColor: colors.white },
+  tabText: { fontFamily: fonts.body, fontSize: 13, fontWeight: '700', color: colors.inkSoft },
+  tabTextActive: { color: colors.red },
   greetRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   greetText: { fontFamily: fonts.body, fontSize: 13.5, color: colors.inkSoft },
   cardLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, fontWeight: '700', marginBottom: 10 },
