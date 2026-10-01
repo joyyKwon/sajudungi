@@ -9,6 +9,7 @@ import { GAN_IMAGE } from './gan';
 import { ZHI_CHUNG, ZHI_HAP, ZHI_RELATION_NONE } from './zhiRelations';
 import { LOVE_BY_DAY_GOD, PERSONALITY_BY_MONTH_GOD, WEALTH_BY_JAESEONG } from './detail';
 import { SINSAL, SINSAL_NONE, SINSAL_POSITION, SINSAL_REPEATED } from './sinsal';
+import { JOHU_INTRO, JOHU_ROLE, JOHU_SEASON } from './johu';
 
 /**
  * Every piece of interpretation text the app can show. The files in this folder
@@ -39,6 +40,9 @@ export const BUNDLED_CONTENT = {
   SINSAL_POSITION,
   SINSAL_REPEATED,
   SINSAL_NONE,
+  JOHU_INTRO,
+  JOHU_SEASON,
+  JOHU_ROLE,
 };
 
 export type ContentBundle = typeof BUNDLED_CONTENT;

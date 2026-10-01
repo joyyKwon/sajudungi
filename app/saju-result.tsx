@@ -9,7 +9,7 @@ import { Mascot } from '../components/Mascot';
 import { useProfile, useRequiredProfile, useSaju } from '../context/ProfileContext';
 import { ELEMENT_HANGUL, ELEMENT_HANJA } from '../lib/sajuContent';
 import { describeBasis } from '../lib/format';
-import { elementCounts } from '../lib/saju';
+import { GAN_ELEMENT, GAN_HANGUL, elementCounts } from '../lib/saju';
 import { ELEMENT_ORDER, elementInsights } from '../lib/interpret';
 import { useContent } from '../context/ContentContext';
 import { GROUP_ORDER } from '../lib/content/tenGodGroups';
@@ -19,6 +19,7 @@ import { zhiRelationsOf } from '../lib/zhiRelations';
 import { DetailLine, loveDetail, personalityDetail, wealthDetail } from '../lib/detail';
 import { POSITION_PILLAR_LABEL, POSITION_ZHI_LABEL, SinsalHit, sinsalOf } from '../lib/sinsal';
 import type { SinsalKey } from '../lib/content/sinsal';
+import { JohuStem, johuOf } from '../lib/johu';
 
 const ELEMENT_COLOR = {
   wood: colors.wood,
@@ -27,6 +28,17 @@ const ELEMENT_COLOR = {
   metal: colors.metal,
   water: colors.water,
 } as const;
+
+const PRESENCE_LABEL: Record<JohuStem['presence'], string> = { visible: '원국에 있음', hidden: '지지 속에 있음', absent: '원국에 없음' };
+
+function StemBadge({ gan, size }: { gan: string; size: number }) {
+  const color = ELEMENT_COLOR[GAN_ELEMENT[gan]];
+  return (
+    <View style={[styles.stemBadge, { width: size, height: size, borderRadius: size / 4, backgroundColor: color + '38' }]}>
+      <Text style={[styles.stemBadgeText, { color, fontSize: size * 0.5 }]}>{gan}</Text>
+    </View>
+  );
+}
 
 export default function SajuResultScreen() {
   const { me } = useProfile();
@@ -39,7 +51,7 @@ function SajuResult() {
   const saju = useSaju();
 
   const { content } = useContent();
-  const { ILGAN, ILJU, GROUP_INFO, ZHI_RELATION_NONE, SINSAL_POSITION, SINSAL_REPEATED, SINSAL_NONE } = content;
+  const { ILGAN, ILJU, GROUP_INFO, ZHI_RELATION_NONE, SINSAL_POSITION, SINSAL_REPEATED, SINSAL_NONE, JOHU_INTRO } = content;
   const ilgan = ILGAN[saju.day.gan];
   const counts = elementCounts(saju);
   const maxCount = Math.max(...Object.values(counts), 1);
@@ -55,6 +67,7 @@ function SajuResult() {
   const ilganTag = `일간 ${saju.day.gan}(${ELEMENT_HANGUL[saju.dayGanElement]}) 기준`;
   const zhiRelations = zhiRelationsOf(saju);
   const sinsal = sinsalOf(saju);
+  const johu = johuOf(saju, now);
   const [openSinsal, setOpenSinsal] = useState<SinsalKey | null>(null);
   const shownSinsal: SinsalHit | undefined = sinsal.find((s) => s.key === openSinsal) ?? sinsal[0];
   const details: { title: string; base: string; extra: DetailLine }[] = [
@@ -186,6 +199,41 @@ function SajuResult() {
             </Text>
           ))}
           <Text style={styles.footnote}>겉으로 드러난 글자 기준이며, 지지 속 숨은 기운(지장간)은 포함하지 않았어요.</Text>
+        </Card>
+
+        <Card>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>태어난 계절과 필요한 기운</Text>
+            <Text style={styles.tag}>조후 · {johu.seasonTitle}</Text>
+          </View>
+          <Text style={styles.sectionBody}>{johu.seasonBody}</Text>
+          <View style={styles.johuMain}>
+            <StemBadge gan={johu.primary.gan} size={40} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.flowTitle}>
+                가장 필요한 기운 · {johu.primary.gan}({GAN_HANGUL[johu.primary.gan]})
+              </Text>
+              <Text style={styles.sectionBody}>{johu.primary.role}</Text>
+            </View>
+          </View>
+          {johu.others.length > 0 && (
+            <View style={{ gap: 8, marginTop: 12 }}>
+              <Text style={styles.johuSubLabel}>함께 있으면 좋은 기운</Text>
+              {johu.others.map((o) => (
+                <View key={o.gan} style={styles.johuOtherRow}>
+                  <StemBadge gan={o.gan} size={28} />
+                  <Text style={[styles.sectionBody, { flex: 1 }]}>
+                    {o.gan}({GAN_HANGUL[o.gan]}) · {PRESENCE_LABEL[o.presence]} — {o.role}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+          <Text style={[styles.sectionBody, { marginTop: 12 }]}>
+            {johu.presenceLine} {johu.timingLine}
+          </Text>
+          <Text style={styles.footnote}>{JOHU_INTRO}</Text>
+          <Text style={[styles.footnote, { marginTop: 4 }]}>근거: {johu.source}</Text>
         </Card>
 
         <Card>
@@ -332,6 +380,11 @@ const styles = StyleSheet.create({
   barTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.line, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 5 },
   groupLabel: { width: 34, fontFamily: fonts.display, fontSize: 14, color: colors.ink },
+  johuMain: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12, backgroundColor: colors.white, borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: colors.line },
+  johuSubLabel: { fontFamily: fonts.body, fontSize: 12, fontWeight: '700', color: colors.inkSoft },
+  johuOtherRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  stemBadge: { alignItems: 'center', justifyContent: 'center' },
+  stemBadgeText: { fontFamily: fonts.display, fontWeight: '700' },
   sinsalTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   sinsalTag: { paddingVertical: 6, paddingHorizontal: 11, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line },
   sinsalTagActive: { backgroundColor: colors.redSoft, borderColor: colors.red },
