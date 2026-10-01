@@ -1,6 +1,6 @@
-import { GAN_ELEMENT, GAN_HANGUL, SajuResult, ZHI_HANGUL, ZHI_MAIN_GAN, yearGanZhi } from './saju';
+import { GAN_ELEMENT, GAN_HANGUL, SajuResult, ZHI_MAIN_GAN, yearGanZhi } from './saju';
 import { getContent } from './contentStore';
-import { iga } from './interpret';
+import { eunneun, iga } from './interpret';
 import { ELEMENT_HANJA } from './sajuContent';
 
 /*
@@ -198,13 +198,13 @@ export function johuOf(saju: SajuResult, now: Date = new Date()): JohuReading {
   const [primary, ...others] = [...stems].map(toStem);
 
   const p = label(primary.gan);
-  const hiddenIn = branches.filter((z) => ZHI_MAIN_GAN[z] === primary.gan).map((z) => `${z}(${ZHI_HANGUL[z]})`);
+  const name = GAN_HANGUL[primary.gan]; // particles follow the reading (갑), not the closing bracket
   const presenceLine =
     primary.presence === 'visible'
-      ? `원국의 천간에 ${p}${iga(p)} 드러나 있어, 필요한 기운을 이미 갖추고 있는 편이에요.`
+      ? `${p}${eunneun(name)} 내 사주에 이미 들어 있어요. 필요한 기운을 타고난 셈이에요.`
       : primary.presence === 'hidden'
-        ? `${p}${iga(p)} 천간에는 없지만 지지 ${hiddenIn.join('·')} 속에 숨어 있어요. 운에서 ${p}${iga(p)} 드러날 때 힘을 얻기 쉬워요.`
-        : `원국에는 ${p}${iga(p)} 없어요. 운에서 ${p}${iga(p)} 들어오는 때에 균형이 잡히기 쉬워요.`;
+        ? `${p}${eunneun(name)} 내 사주 속에 숨은 기운으로 들어 있어요. 운에서 ${p}${iga(name)} 들어올 때 더 힘을 얻기 쉬워요.`
+        : `${p}${eunneun(name)} 내 사주에 없는 기운이에요. 운에서 ${p}${iga(name)} 들어오는 시기에 균형이 잡히기 쉬워요.`;
 
   const thisYear = now.getFullYear();
   let nextYear = thisYear;

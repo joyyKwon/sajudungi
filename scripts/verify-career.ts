@@ -26,16 +26,16 @@ for (const g of Object.keys(TEN_GODS)) {
   ok(`style ${g}`, !!t && sentences(t) >= 4 && t.length >= 150 && clean(t), t?.length);
 }
 ok('styles unique', new Set(Object.values(CAREER_STYLE_BY_MONTH_GOD)).size === 10);
-for (const g of GROUP_ORDER) ok(`tip ${g}`, CAREER_TIP_BY_LACKING[g].startsWith(g) && CAREER_TIP_BY_LACKING[g].length >= 80 && clean(CAREER_TIP_BY_LACKING[g]));
+for (const g of GROUP_ORDER) ok(`tip ${g}`, CAREER_TIP_BY_LACKING[g].length >= 80 && clean(CAREER_TIP_BY_LACKING[g]));
 
 // Samples shown to the user
 const chart = (gender: 'male' | 'female', y: number, m: number, d: number, h: number) =>
   calculateSaju({ gender, year: y, month: m, day: d, hour: h, minute: 0, calendarType: 'solar' });
 const A = careerOf(chart('female', 1995, 6, 15, 12));
-ok('A field 비겁', A.fields.map((f) => f.group).join() === '비겁' && A.fieldsBasis.includes('비겁 3개'), A.fieldsBasis);
+ok('A field 비겁', A.fields.map((f) => f.group).join() === '비겁' && A.fieldsBasis === '비겁(자립과 경쟁의 기운) 3개로 가장 많아요', A.fieldsBasis);
 ok('A keywords', A.keywords.join() === '자립심,실행력,책임감', A.keywords);
-ok('A style 비견', A.style.text === CAREER_STYLE_BY_MONTH_GOD.비견 && A.style.basis.includes('월지 午'));
-ok('A tip 재성', A.tips.map((t) => t.group).join() === '재성');
+ok('A style 비견', A.style.text === CAREER_STYLE_BY_MONTH_GOD.비견 && A.style.basis === '사회생활 자리(월지) 午(오) · 비견');
+ok('A tip 재성', A.tips.map((t) => t.group).join() === '재성' && A.tipsBasis === '재성(현실과 결과의 기운)이 사주에 드러나 있지 않아요', A.tipsBasis);
 const B = careerOf(chart('female', 1992, 11, 17, 9));
 ok('B field 재성 / style 정관 / tip 비겁', B.fields[0].group === '재성' && B.style.text === CAREER_STYLE_BY_MONTH_GOD.정관 && B.tips.map((t) => t.group).join() === '비겁');
 const C = careerOf(chart('male', 1988, 3, 10, 15));

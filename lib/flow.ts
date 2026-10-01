@@ -1,7 +1,7 @@
 import { DaeunEntry, GAN_HANGUL, SajuResult, TenGod, WolunEntry, ZHI_HANGUL, ZHI_MAIN_GAN, ganZhiHangul, tenGodOf, yearGanZhi } from './saju';
 import type { FlowTheme } from './content/flow';
 import { getContent } from './contentStore';
-import { iyeyo } from './interpret';
+import { eunneun, iyeyo } from './interpret';
 
 export type FlowInfo = {
   /** Short label, e.g. "2026년 세운" or "24~33세 대운". */
@@ -10,18 +10,21 @@ export type FlowInfo = {
   hangul: string;
   ganGod: TenGod;
   zhiGod: TenGod;
+  /** Plain-language title, e.g. "승부욕이 살아나는 해". */
   title: string;
+  /** The term for it, e.g. "겁재(劫財)의 해" — shown as a small tag, not in the body. */
+  godLabel: string;
   body: string;
-  /** Secondary note about the branch's hidden-stem influence. */
+  /** Secondary note about the branch's hidden-stem influence, without terms. */
   note: string;
-  /** Why this reading follows from the chart. */
+  /** Why this reading follows from the chart; this is where the 십신 terms live. */
   basis: string;
 };
 
 const PERIOD_WORD = { year: '해', month: '달', daeun: '시기' } as const;
 
 function build(saju: SajuResult, ganZhi: string, kind: 'year' | 'month' | 'daeun', label: string): FlowInfo {
-  const { TEN_GODS, YEAR_THEME, MONTH_THEME, DAEUN_THEME } = getContent();
+  const { TEN_GODS, YEAR_THEME, MONTH_THEME, DAEUN_THEME, FLOW_UNDERTONE } = getContent();
   const theme: Record<TenGod, FlowTheme> = { year: YEAR_THEME, month: MONTH_THEME, daeun: DAEUN_THEME }[kind];
   const [gan, zhi] = [ganZhi[0], ganZhi[1]];
   const ganGod = tenGodOf(saju.dayGan, gan);
@@ -33,10 +36,11 @@ function build(saju: SajuResult, ganZhi: string, kind: 'year' | 'month' | 'daeun
     hangul: ganZhiHangul(ganZhi),
     ganGod,
     zhiGod,
-    title: `${ganGod}(${TEN_GODS[ganGod].hanja})의 ${PERIOD_WORD[kind]} · ${theme[ganGod].title}`,
+    title: theme[ganGod].title,
+    godLabel: `${ganGod}(${TEN_GODS[ganGod].hanja})의 ${PERIOD_WORD[kind]}`,
     body: theme[ganGod].body,
-    note: `지지 ${zhi}(${ZHI_HANGUL[zhi]})의 속기운은 ${zhiGod}${iyeyo(zhiGod)}. ${TEN_GODS[zhiGod].meaning} 쪽 영향도 함께 있어요.`,
-    basis: `천간 ${gan}(${GAN_HANGUL[gan]})은 내 일간 ${saju.dayGan}(${GAN_HANGUL[saju.dayGan]})에게 ${ganGod}${iyeyo(ganGod)}.`,
+    note: FLOW_UNDERTONE[zhiGod],
+    basis: `${gan}(${GAN_HANGUL[gan]})${eunneun(GAN_HANGUL[gan])} 나(${saju.dayGan})에게 ${ganGod}, ${zhi}(${ZHI_HANGUL[zhi]}) 속 기운은 ${zhiGod}${iyeyo(zhiGod)}.`,
   };
 }
 

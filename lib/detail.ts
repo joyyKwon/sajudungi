@@ -39,7 +39,7 @@ export function personalityDetail(saju: SajuResult): DetailLine {
   const god = branchGod(saju, zhi);
   return {
     text: getContent().PERSONALITY_BY_MONTH_GOD[god],
-    basis: `월지 ${zhi}(${ZHI_HANGUL[zhi]}) · 일간 ${saju.dayGan} 기준 ${god}`,
+    basis: `사회생활 자리(월지) ${zhi}(${ZHI_HANGUL[zhi]}) · ${god}`,
     reference: `${BOOK} ${MONTH_REFERENCE} · ${GOD_REFERENCE[god]}`,
   };
 }
@@ -51,7 +51,7 @@ export function wealthDetail(saju: SajuResult): DetailLine {
   const text = count === 0 ? WEALTH_BY_JAESEONG.none : count <= 2 ? WEALTH_BY_JAESEONG.some : WEALTH_BY_JAESEONG.many;
   return {
     text,
-    basis: `원국의 재성 ${count}개 · 일간을 뺀 천간과 지지 본기운 기준${saju.hour ? '' : ', 시주 제외'}`,
+    basis: `재성(재물·현실 감각의 기운) ${count}개 · 일간을 뺀 천간과 지지 본기운 기준${saju.hour ? '' : ', 시주 제외'}`,
     reference: count === 0 ? null : `${BOOK} ${WEALTH_REFERENCE}`,
   };
 }
@@ -62,7 +62,7 @@ export function loveDetail(saju: SajuResult): DetailLine {
   const god = branchGod(saju, zhi);
   return {
     text: getContent().LOVE_BY_DAY_GOD[god],
-    basis: `일지 ${zhi}(${ZHI_HANGUL[zhi]}) · 일간 ${saju.dayGan} 기준 ${god}`,
+    basis: `배우자 자리(일지) ${zhi}(${ZHI_HANGUL[zhi]}) · ${god}`,
     reference: `${BOOK} ${DAY_BRANCH_REFERENCE}`,
   };
 }

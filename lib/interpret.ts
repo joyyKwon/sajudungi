@@ -8,6 +8,8 @@ const hasFinalConsonant = (word: string) => {
 };
 /** 이에요 / 예요 attached to a Korean word. */
 export const iyeyo = (word: string) => (hasFinalConsonant(word) ? '이에요' : '예요');
+/** 은 / 는 attached to a Korean word. */
+export const eunneun = (word: string) => (hasFinalConsonant(word) ? '은' : '는');
 /** 이 / 가 attached to a Korean word. */
 export const iga = (word: string) => (hasFinalConsonant(word) ? '이' : '가');
 

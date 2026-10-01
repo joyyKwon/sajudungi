@@ -45,7 +45,17 @@ const monthDay = (ms: number) => {
   return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
 };
 
-const PRESENCE_LABEL: Record<JohuStem['presence'], string> = { visible: '원국에 있음', hidden: '지지 속에 있음', absent: '원국에 없음' };
+const PRESENCE_LABEL: Record<JohuStem['presence'], string> = { visible: '사주에 드러나 있음', hidden: '사주 속에 숨어 있음', absent: '사주에 없음' };
+
+/** A plain-language heading with the 사주 term for it as a small tag beside it. */
+function FlowHeading({ title, term }: { title: string; term: string }) {
+  return (
+    <View style={styles.flowHeading}>
+      <Text style={[styles.flowTitle, { marginBottom: 0 }]}>{title}</Text>
+      <Text style={styles.termTag}>{term}</Text>
+    </View>
+  );
+}
 
 function StemBadge({ gan, size }: { gan: string; size: number }) {
   const color = ELEMENT_COLOR[GAN_ELEMENT[gan]];
@@ -193,7 +203,7 @@ function SajuResult() {
                 {thisMonth.label} · {thisMonth.hangul}
               </Text>
             </View>
-            <Text style={styles.flowTitle}>{thisMonth.title}</Text>
+            <FlowHeading title={thisMonth.title} term={thisMonth.godLabel} />
             <Text style={styles.sectionBody}>{thisMonth.body}</Text>
             <Text style={[styles.sectionBody, { marginTop: 8 }]}>{thisMonth.note}</Text>
             <Text style={styles.footnote}>
@@ -209,7 +219,7 @@ function SajuResult() {
               {thisYear.label} · {thisYear.hangul}
             </Text>
           </View>
-          <Text style={styles.flowTitle}>{thisYear.title}</Text>
+          <FlowHeading title={thisYear.title} term={thisYear.godLabel} />
           <Text style={styles.sectionBody}>{thisYear.body}</Text>
           <Text style={[styles.sectionBody, { marginTop: 8 }]}>{thisYear.note}</Text>
           <Text style={styles.footnote}>{thisYear.basis}</Text>
@@ -226,7 +236,7 @@ function SajuResult() {
           </View>
           {currentDaeun ? (
             <>
-              <Text style={styles.flowTitle}>{currentDaeun.title}</Text>
+              <FlowHeading title={currentDaeun.title} term={currentDaeun.godLabel} />
               <Text style={styles.sectionBody}>{currentDaeun.body}</Text>
               <Text style={[styles.sectionBody, { marginTop: 8 }]}>{currentDaeun.note}</Text>
               <Text style={styles.footnote}>{currentDaeun.basis}</Text>
@@ -236,7 +246,7 @@ function SajuResult() {
           )}
           {nextDaeun && (
             <Text style={[styles.sectionBody, { marginTop: 10 }]}>
-              다음 대운은 {nextDaeun.label.replace(' 대운', '')}에 {nextDaeun.hangul}로 바뀌어요 · {nextDaeun.ganGod}의 시기예요.
+              다음 대운은 {nextDaeun.label.replace(' 대운', '')}에 {nextDaeun.hangul}로 바뀌어요 · {nextDaeun.title}
             </Text>
           )}
         </Card>
@@ -299,7 +309,7 @@ function SajuResult() {
             {johu.presenceLine} {johu.timingLine}
           </Text>
           <Text style={styles.footnote}>{JOHU_INTRO}</Text>
-          <Text style={[styles.footnote, { marginTop: 4 }]}>근거: {johu.source}</Text>
+          <Text style={[styles.footnote, { marginTop: 4 }]}>출처: {johu.source}</Text>
         </Card>
 
         <Card>
@@ -327,7 +337,7 @@ function SajuResult() {
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle}>지지 관계 (합·충)</Text>
+          <Text style={styles.sectionTitle}>지지 관계</Text>
           {zhiRelations.length === 0 ? (
             <Text style={styles.sectionBody}>{ZHI_RELATION_NONE}</Text>
           ) : (
@@ -373,18 +383,18 @@ function SajuResult() {
                 <Text style={[styles.sectionBody, { marginTop: 8 }]}>
                   어디에:{' '}
                   {shownSinsal.positions
-                    .map((p) => `${(shownSinsal.byPillar ? POSITION_PILLAR_LABEL : POSITION_ZHI_LABEL)[p]}(${SINSAL_POSITION[p]})`)
+                    .map((p) => `${SINSAL_POSITION[p]}(${(shownSinsal.byPillar ? POSITION_PILLAR_LABEL : POSITION_ZHI_LABEL)[p]})`)
                     .join(' · ')}
                   {shownSinsal.positions.length > 1 ? ` — ${SINSAL_REPEATED}` : ''}
                 </Text>
-                <Text style={styles.footnote}>근거: {shownSinsal.basis}</Text>
+                <Text style={styles.footnote}>{shownSinsal.basis}</Text>
               </View>
             </>
           ) : (
             <Text style={styles.sectionBody}>{SINSAL_NONE}</Text>
           )}
           <Text style={styles.footnote}>
-            신살은 유파마다 보는 기준이 조금씩 달라요. 태그를 누르면 설명이 바뀌어요.{saju.hour ? '' : ' 태어난 시간을 몰라 시지는 빼고 봤어요.'}
+            신살은 유파마다 보는 기준이 조금씩 달라요. 태그를 누르면 설명이 바뀌어요.{saju.hour ? '' : ' 태어난 시간을 몰라 시간 자리는 빼고 봤어요.'}
           </Text>
         </Card>
 
@@ -401,7 +411,7 @@ function SajuResult() {
             </View>
             <Text style={styles.sectionBody}>{d.base}</Text>
             <Text style={[styles.sectionBody, { marginTop: 8 }]}>{d.extra.text}</Text>
-            <Text style={styles.footnote}>근거: {d.extra.basis}</Text>
+            <Text style={styles.footnote}>{d.extra.basis}</Text>
             {d.extra.reference && <Text style={[styles.footnote, { marginTop: 4 }]}>참고: {d.extra.reference}</Text>}
           </Card>
         ))}
@@ -432,11 +442,11 @@ function SajuResult() {
               </View>
             </View>
           ))}
-          <Text style={styles.footnote}>근거: {career.fieldsBasis}</Text>
+          <Text style={styles.footnote}>{career.fieldsBasis}</Text>
 
           <Text style={[styles.johuSubLabel, { marginTop: 16 }]}>일하는 방식</Text>
           <Text style={[styles.sectionBody, { marginTop: 6 }]}>{career.style.text}</Text>
-          <Text style={styles.footnote}>근거: {career.style.basis}</Text>
+          <Text style={styles.footnote}>{career.style.basis}</Text>
 
           {career.tips.length > 0 && (
             <>
@@ -446,7 +456,7 @@ function SajuResult() {
                   {t.text}
                 </Text>
               ))}
-              <Text style={styles.footnote}>근거: 원국의 {career.tips.map((t) => `${t.group} 0개`).join(', ')}</Text>
+              <Text style={styles.footnote}>{career.tipsBasis}</Text>
             </>
           )}
         </Card>
@@ -504,6 +514,8 @@ const styles = StyleSheet.create({
   barTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: colors.line, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 5 },
   groupLabel: { width: 34, fontFamily: fonts.display, fontSize: 14, color: colors.ink },
+  flowHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 6 },
+  termTag: { fontFamily: fonts.body, fontSize: 10.5, color: colors.inkSoft, borderWidth: 1, borderColor: colors.line, paddingVertical: 2, paddingHorizontal: 7, borderRadius: radius.pill, overflow: 'hidden' },
   johuMain: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12, backgroundColor: colors.white, borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: colors.line },
   johuSubLabel: { fontFamily: fonts.body, fontSize: 12, fontWeight: '700', color: colors.inkSoft },
   johuOtherRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },

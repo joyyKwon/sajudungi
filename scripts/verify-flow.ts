@@ -1,6 +1,6 @@
 import { calculateSaju, sajuYearOf, tenGodOf, wolunOfYear, yearGanZhi, SajuResult } from '../lib/saju';
 import { TEN_GODS } from '../lib/content/tenGods';
-import { DAEUN_THEME, MONTH_THEME, YEAR_THEME } from '../lib/content/flow';
+import { DAEUN_THEME, FLOW_UNDERTONE, MONTH_THEME, YEAR_THEME } from '../lib/content/flow';
 import { GROUP_BALANCED, GROUP_INFO, GROUP_ORDER } from '../lib/content/tenGodGroups';
 import { analyzeGroups, tenGodGroupCounts, GroupCounts } from '../lib/tenGodGroups';
 import { daeunFlow, daeunState, monthFlow, yearFlow } from '../lib/flow';
@@ -22,6 +22,7 @@ for (const g of GODS) {
 }
 ok('YEAR bodies unique', new Set(GODS.map((g) => (YEAR_THEME as any)[g].body)).size === 10);
 ok('DAEUN bodies unique', new Set(GODS.map((g) => (DAEUN_THEME as any)[g].body)).size === 10);
+ok('10 undertones, each a full sentence', GODS.every((g) => /요\.$/.test((FLOW_UNDERTONE as any)[g]) && clean((FLOW_UNDERTONE as any)[g])) && new Set(Object.values(FLOW_UNDERTONE)).size === 10);
 ok('MONTH bodies unique', new Set(GODS.map((g) => (MONTH_THEME as any)[g].body)).size === 10);
 
 // 월운: 12 contiguous months per 사주 year, following the 월건 rule (年干 → 寅月 stem)
@@ -103,11 +104,11 @@ for (let i = 0; i < 1500; i++) {
     const f = yearFlow(saju, y);
     ok('year flow ganZhi matches yearGanZhi', f.ganZhi === yearGanZhi(y) && f.label === `${y}년 세운`);
     ok('year flow god = tenGodOf', f.ganGod === tenGodOf(saju.dayGan, f.ganZhi[0]));
-    ok('year flow text', clean(f.title + f.body + f.note + f.basis) && f.title.includes(f.ganGod) && f.note.includes(f.zhiGod));
+    ok('year flow text', clean(f.title + f.body + f.note + f.basis) && f.godLabel.includes(f.ganGod) && f.godLabel.endsWith('의 해') && f.basis.includes(f.ganGod) && f.basis.includes(f.zhiGod));
   }
   for (const m of wolunOfYear(2026)) {
     const f = monthFlow(saju, m);
-    ok('month flow', clean(f.title + f.body + f.note + f.basis) && f.label === `${m.calendarYear}년 ${m.month}월 월운` && f.ganZhi === m.ganZhi && f.title.includes('의 달'));
+    ok('month flow', clean(f.title + f.body + f.note + f.basis) && f.label === `${m.calendarYear}년 ${m.month}월 월운` && f.ganZhi === m.ganZhi && f.godLabel.endsWith('의 달'));
     ok('month flow god = tenGodOf', f.ganGod === tenGodOf(saju.dayGan, m.ganZhi[0]));
   }
   for (const d of saju.daeun) {

@@ -46,6 +46,7 @@ const A = calculateSaju({ gender: 'female', year: 1995, month: 6, day: 15, hour:
 const a = johuOf(A, new Date(2026, 8, 28));
 ok('A primary 壬, visible', a.primary.gan === '壬' && a.primary.presence === 'visible', a.primary);
 ok('A others 庚, absent', a.others.map((o) => o.gan).join() === '庚' && a.others[0].presence === 'absent', a.others);
+ok('A presence sentence (은/는 follows 임, not the bracket)', a.presenceLine === '壬(임)은 내 사주에 이미 들어 있어요. 필요한 기운을 타고난 셈이에요.', a.presenceLine);
 ok('A source', a.source.startsWith('《궁통보감》 五月丁火'), a.source);
 ok('A timing: next 壬 year is 2032 (壬子)', a.timingLine === '다음 壬(임)의 해는 2032년(壬子)이에요.', a.timingLine);
 ok('A season 한여름', a.seasonTitle === '한여름');

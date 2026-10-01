@@ -33,6 +33,23 @@ export const MONTH_THEME: Record<TenGod, FlowTheme> = {
   정인: { title: '채우고 배우는 달', body: '주변의 도움을 받기 쉽고 배움이 잘 들어오는 한 달이에요. 충분히 쉬면서 책이나 강의로 나를 채워보세요.' },
 };
 
+/**
+ * The quieter second note of a period, by the 십신 of its branch (지지 속 기운).
+ * One full sentence each, so it reads naturally after any 세운/월운/대운 body.
+ */
+export const FLOW_UNDERTONE: Record<TenGod, string> = {
+  비견: '속으로는 내 힘으로 해내고 싶은 마음도 함께 커져요.',
+  겁재: '속으로는 지고 싶지 않은 승부욕도 함께 움직여요.',
+  식신: '속으로는 여유를 즐기고 싶은 마음도 함께 있어요.',
+  상관: '속으로는 새로운 걸 시도해보고 싶은 마음도 꿈틀거려요.',
+  편재: '속으로는 새로운 기회를 찾아 움직이고 싶은 마음도 있어요.',
+  정재: '속으로는 차곡차곡 챙기고 싶은 마음도 함께 있어요.',
+  편관: '속으로는 책임감과 긴장감도 함께 따라와요.',
+  정관: '속으로는 규칙을 지키고 인정받고 싶은 마음도 있어요.',
+  편인: '속으로는 혼자 깊이 파고들고 싶은 마음도 있어요.',
+  정인: '속으로는 배우고 쉬며 채우고 싶은 마음도 있어요.',
+};
+
 /** How a 10-year cycle (대운) whose heavenly stem is this 십신 tends to feel. */
 export const DAEUN_THEME: Record<TenGod, FlowTheme> = {
   비견: { title: '동료와 자립의 시기', body: '나와 결이 비슷한 사람들과 함께하며 자립심을 키우는 10년이에요. 협력과 경쟁이 함께 오니 균형을 잡는 게 중요해요.' },

@@ -115,7 +115,7 @@ const flowToUi = (info: FlowInfo, calcReason: string): Pillar => ({
   branchColor: ELEMENT_COLOR[ZHI_ELEMENT[info.ganZhi[1]]],
   hangul: info.hangul,
   calcReason,
-  interpretation: [info.title, info.body, info.note].join('\n\n'),
+  interpretation: [`${info.godLabel} · ${info.title}`, info.body, info.note].join('\n\n'),
 });
 
 function buildSeun(saju: SajuResult, year: number): Pillar {

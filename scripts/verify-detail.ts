@@ -25,7 +25,6 @@ for (const [name, table] of [['PERSONALITY', PERSONALITY_BY_MONTH_GOD], ['LOVE',
   }
   ok(`${name} unique`, new Set(Object.values(table)).size === 10);
 }
-for (const g of GODS) ok(`LOVE ${g} names its 십신`, (LOVE_BY_DAY_GOD as Record<string, string>)[g].includes(g));
 for (const t of Object.values(WEALTH_BY_JAESEONG)) ok('WEALTH text: 4+ sentences', sentences(t) >= 4 && t.length >= 150 && clean(t), t);
 ok('10 신살', Object.keys(SINSAL).length === 10);
 for (const [k, s] of Object.entries(SINSAL)) ok(`SINSAL ${k}`, s.name.length >= 2 && s.hanja.length >= 2 && s.title.length >= 4 && s.body.length >= 60 && clean(s.name + s.title + s.body), s);
@@ -54,9 +53,9 @@ ok('B without hour', summary(B0) === 'cheoneul:month+day munchang:day dohwa:day 
 ok('A/B personality differ', personalityDetail(A).text !== personalityDetail(B).text);
 ok('A personality = 월지 午 비견', personalityDetail(A).text === PERSONALITY_BY_MONTH_GOD.비견 && personalityDetail(A).basis.includes('비견'));
 ok('B personality = 월지 亥 정관', personalityDetail(B).text === PERSONALITY_BY_MONTH_GOD.정관);
-ok('A wealth none', wealthDetail(A).text === WEALTH_BY_JAESEONG.none && wealthDetail(A).basis.startsWith('원국의 재성 0개'));
-ok('B wealth many', wealthDetail(B).text === WEALTH_BY_JAESEONG.many && wealthDetail(B).basis.startsWith('원국의 재성 3개'));
-ok('A love 식신', loveDetail(A).text === LOVE_BY_DAY_GOD.식신);
+ok('A wealth none', wealthDetail(A).text === WEALTH_BY_JAESEONG.none && wealthDetail(A).basis.startsWith('재성(재물·현실 감각의 기운) 0개'));
+ok('B wealth many', wealthDetail(B).text === WEALTH_BY_JAESEONG.many && wealthDetail(B).basis.startsWith('재성(재물·현실 감각의 기운) 3개'));
+ok('A love 식신', loveDetail(A).text === LOVE_BY_DAY_GOD.식신 && loveDetail(A).basis === '배우자 자리(일지) 丑(축) · 식신', loveDetail(A).basis);
 ok('B love 편재', loveDetail(B).text === LOVE_BY_DAY_GOD.편재);
 ok('C love 정인', loveDetail(C).text === LOVE_BY_DAY_GOD.정인);
 // Classical references: 월지/일지 seat plus the 십신 chapter; none when there is no 재성 to speak of.
