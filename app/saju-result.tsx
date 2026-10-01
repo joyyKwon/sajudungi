@@ -20,6 +20,7 @@ import { DetailLine, loveDetail, personalityDetail, wealthDetail } from '../lib/
 import { POSITION_PILLAR_LABEL, POSITION_ZHI_LABEL, SinsalHit, sinsalOf } from '../lib/sinsal';
 import type { SinsalKey } from '../lib/content/sinsal';
 import { JohuStem, johuOf } from '../lib/johu';
+import { careerOf } from '../lib/career';
 
 const ELEMENT_COLOR = {
   wood: colors.wood,
@@ -68,6 +69,7 @@ function SajuResult() {
   const zhiRelations = zhiRelationsOf(saju);
   const sinsal = sinsalOf(saju);
   const johu = johuOf(saju, now);
+  const career = careerOf(saju);
   const [openSinsal, setOpenSinsal] = useState<SinsalKey | null>(null);
   const shownSinsal: SinsalHit | undefined = sinsal.find((s) => s.key === openSinsal) ?? sinsal[0];
   const details: { title: string; base: string; extra: DetailLine }[] = [
@@ -333,6 +335,51 @@ function SajuResult() {
             <Text style={styles.footnote}>근거: {d.extra.basis}</Text>
           </Card>
         ))}
+
+        <Card>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>직업·적성</Text>
+            <Text style={styles.tag}>십신 분포 기준</Text>
+          </View>
+          <View style={styles.sinsalTags}>
+            {career.keywords.map((k) => (
+              <View key={k} style={[styles.sinsalTag, styles.sinsalTagActive]}>
+                <Text style={[styles.sinsalTagText, styles.sinsalTagTextActive]}>{k}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Text style={styles.johuSubLabel}>잘 맞는 분야</Text>
+          {career.fields.map((f) => (
+            <View key={f.group ?? 'balanced'} style={{ marginTop: 6 }}>
+              <Text style={styles.sectionBody}>{f.body}</Text>
+              <View style={[styles.sinsalTags, { marginTop: 10, marginBottom: 0 }]}>
+                {f.jobs.map((j) => (
+                  <View key={j} style={styles.sinsalTag}>
+                    <Text style={styles.sinsalTagText}>{j}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+          <Text style={styles.footnote}>근거: {career.fieldsBasis}</Text>
+
+          <Text style={[styles.johuSubLabel, { marginTop: 16 }]}>일하는 방식</Text>
+          <Text style={[styles.sectionBody, { marginTop: 6 }]}>{career.style.text}</Text>
+          <Text style={styles.footnote}>근거: {career.style.basis}</Text>
+
+          {career.tips.length > 0 && (
+            <>
+              <Text style={[styles.johuSubLabel, { marginTop: 16 }]}>보완 팁</Text>
+              {career.tips.map((t) => (
+                <Text key={t.group} style={[styles.sectionBody, { marginTop: 6 }]}>
+                  {t.text}
+                </Text>
+              ))}
+              <Text style={styles.footnote}>근거: 원국의 {career.tips.map((t) => `${t.group} 0개`).join(', ')}</Text>
+            </>
+          )}
+        </Card>
 
         <Text style={styles.disclaimer}>
           사주 해석은 관점에 따라 달라질 수 있는 참고용이에요. 타고난 경향을 풀어본 것이니 재미로 즐겨주세요.

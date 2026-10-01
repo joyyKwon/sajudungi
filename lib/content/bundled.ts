@@ -10,6 +10,7 @@ import { ZHI_CHUNG, ZHI_HAP, ZHI_RELATION_NONE } from './zhiRelations';
 import { LOVE_BY_DAY_GOD, PERSONALITY_BY_MONTH_GOD, WEALTH_BY_JAESEONG } from './detail';
 import { SINSAL, SINSAL_NONE, SINSAL_POSITION, SINSAL_REPEATED } from './sinsal';
 import { JOHU_INTRO, JOHU_ROLE, JOHU_SEASON } from './johu';
+import { CAREER_BALANCED, CAREER_BY_GROUP, CAREER_STYLE_BY_MONTH_GOD, CAREER_TIP_BY_LACKING } from './career';
 
 /**
  * Every piece of interpretation text the app can show. The files in this folder
@@ -43,6 +44,10 @@ export const BUNDLED_CONTENT = {
   JOHU_INTRO,
   JOHU_SEASON,
   JOHU_ROLE,
+  CAREER_BY_GROUP,
+  CAREER_BALANCED,
+  CAREER_STYLE_BY_MONTH_GOD,
+  CAREER_TIP_BY_LACKING,
 };
 
 export type ContentBundle = typeof BUNDLED_CONTENT;
