@@ -1,4 +1,4 @@
-import { Pressable, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { Pressable, Text, StyleSheet, ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { colors, radius, fonts } from '../theme';
 
 type Props = {
@@ -6,10 +6,12 @@ type Props = {
   onPress?: () => void;
   variant?: 'primary' | 'outline';
   style?: StyleProp<ViewStyle>;
+  /** Overrides the label look, e.g. for third-party brand buttons with their own colors. */
+  labelStyle?: StyleProp<TextStyle>;
   icon?: React.ReactNode;
 };
 
-export function Button({ label, onPress, variant = 'primary', style, icon }: Props) {
+export function Button({ label, onPress, variant = 'primary', style, labelStyle, icon }: Props) {
   const isPrimary = variant === 'primary';
   return (
     <Pressable
@@ -22,7 +24,7 @@ export function Button({ label, onPress, variant = 'primary', style, icon }: Pro
       ]}
     >
       {icon}
-      <Text style={[styles.label, isPrimary ? styles.labelPrimary : styles.labelOutline]}>{label}</Text>
+      <Text style={[styles.label, isPrimary ? styles.labelPrimary : styles.labelOutline, labelStyle]}>{label}</Text>
     </Pressable>
   );
 }

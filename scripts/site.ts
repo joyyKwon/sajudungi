@@ -19,6 +19,8 @@ h2 { font-size: 16px; margin: 28px 0 8px; }
 p { margin: 0 0 8px; font-size: 14.5px; }
 .meta { color: var(--soft); font-size: 13px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-top: 16px; }
+#loginHint + .card { margin-top: 8px; }
+#loginForm label:first-child { margin-top: 0; }
 .links a { display:block; padding: 14px 0; border-bottom: 1px solid var(--line); text-decoration:none; color: var(--ink); font-weight: 700; }
 .links a:last-child { border-bottom: 0; }
 .hero { text-align:center; margin-top: 8px; }
@@ -27,10 +29,15 @@ p { margin: 0 0 8px; font-size: 14.5px; }
 .hero .meta { margin: 0; }
 label { display:block; font-size: 13px; color: var(--soft); margin: 12px 0 4px; }
 input { width:100%; padding: 12px 14px; font-size: 15px; border: 1.5px solid var(--line); border-radius: 12px; background:#fff; color: var(--ink); }
-button { width:100%; padding: 13px; margin-top: 12px; font-size: 15px; font-weight: 700; border-radius: 12px; border: 1.5px solid var(--line); background:#fff; color: var(--ink); cursor:pointer; }
+button { width:100%; padding: 13px; margin-top: 12px; font-family: inherit; font-size: 15px; font-weight: 700; border-radius: 12px; border: 1.5px solid var(--line); background:#fff; color: var(--ink); cursor:pointer; }
 button.primary { background: var(--red); border-color: var(--red); color:#fff; }
 button:disabled { opacity: .5; cursor: default; }
-.msg { margin-top: 12px; font-size: 14px; color: var(--red); min-height: 1.4em; }
+/* Brand rules: Kakao — #FEE500 container, black symbol, 85% black label. Google — white fill, #747775 stroke, #1F1F1F label. */
+button.social { display:flex; align-items:center; justify-content:center; gap: 8px; }
+button.kakao { background:#FEE500; border-color:#FEE500; color: rgba(0,0,0,.85); }
+button.google { background:#FFFFFF; border: 1px solid #747775; color:#1F1F1F; }
+.msg { margin-top: 6px; font-size: 13px; color: var(--red); }
+.msg:empty { display: none; }
 .or { text-align:center; color: var(--soft); font-size: 12px; margin: 16px 0 4px; }
 [hidden] { display: none !important; }
 footer { margin-top: 40px; color: var(--soft); font-size: 12px; }
@@ -90,8 +97,15 @@ const DELETE_SCRIPT = `<script src="https://cdn.jsdelivr.net/npm/@supabase/supab
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var show = function (id) { ['signedOut', 'signedIn', 'requested', 'unavailable'].forEach(function (s) { $(s).hidden = s !== id; }); };
-  var say = function (text) { $('msg').textContent = text || ''; };
+  var show = function (id) {
+    ['signedOut', 'signedIn', 'requested', 'unavailable'].forEach(function (s) { $(s).hidden = s !== id; });
+    $('loginHint').hidden = id !== 'signedOut'; // the hint sits above the box and only applies before sign-in
+  };
+  // Each state has its own message line right above its buttons (under the password field
+  // when signed out); only the visible state's line shows, so one call sets them all.
+  var say = function (text, good) {
+    document.querySelectorAll('.msg').forEach(function (el) { el.textContent = text || ''; el.style.color = good ? 'var(--ink)' : ''; });
+  };
   var cfg = window.SAJUDUNGI_CONFIG;
   if (!cfg || !cfg.url || !cfg.key || !window.supabase) { show('unavailable'); return; }
 
@@ -156,7 +170,7 @@ const DELETE_SCRIPT = `<script src="https://cdn.jsdelivr.net/npm/@supabase/supab
     sb.from('deletion_requests').delete().eq('user_id', user.id).then(function (res) {
       if (res.error) { say('취소하지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
       show('signedIn');
-      say('삭제 요청을 취소했어요.');
+      say('삭제 요청을 취소했어요.', true); // not an error, so not in red
     });
   });
   var signOut = function () { sb.auth.signOut(); };
@@ -181,35 +195,37 @@ const deleteAccount = () =>
 <p>앱의 마이 &gt; 계정 삭제에서도 같은 요청을 할 수 있어요.</p>
 
 <h2>이 페이지에서 삭제하기</h2>
+<p id="loginHint">삭제할 계정으로 로그인해주세요.</p>
 <div class="card">
   <div id="signedOut">
-    <p>삭제할 계정으로 로그인해주세요.</p>
     <form id="loginForm">
       <label for="email">이메일</label>
       <input id="email" type="email" autocomplete="username" required>
       <label for="password">비밀번호</label>
       <input id="password" type="password" autocomplete="current-password" required>
-      <button id="loginBtn" class="primary" type="submit">이메일로 로그인</button>
+      <div class="msg" role="alert"></div>
+      <button id="loginBtn" class="primary" type="submit">이메일 로그인</button>
     </form>
     <div class="or">또는</div>
-    <button id="kakaoBtn" type="button">카카오로 로그인</button>
-    <button id="googleBtn" type="button">Google로 로그인</button>
+    <button id="kakaoBtn" class="social kakao" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12 3C6.9 3 3 6.4 3 10.6c0 2.7 1.7 5 4.3 6.4l-1 3.7c-.1.4.3.7.6.5l4.3-2.7c.3 0 .5.1.8.1 5.1 0 9-3.4 9-7.6S17.1 3 12 3z"/></svg>카카오 로그인</button>
+    <button id="googleBtn" class="social google" type="button"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Google 로그인</button>
   </div>
   <div id="signedIn" hidden>
     <p><strong id="who"></strong> 계정으로 로그인했어요.</p>
+    <div class="msg" role="status"></div>
     <button id="deleteBtn" class="primary" type="button">계정 삭제 요청</button>
     <button id="signOutBtn" type="button">로그아웃</button>
   </div>
   <div id="requested" hidden>
     <p><strong>삭제 요청이 접수됐어요.</strong></p>
     <p>요청한 날: <span id="when"></span><br>완전히 삭제되는 날: <span id="purge"></span> 이후</p>
+    <div class="msg" role="status"></div>
     <button id="cancelBtn" type="button">삭제 요청 취소</button>
     <button id="signOutBtn2" type="button">로그아웃</button>
   </div>
   <div id="unavailable" hidden>
     <p>지금은 이 페이지에서 요청을 받을 수 없어요. 앱의 마이 &gt; 계정 삭제를 이용해주세요.</p>
   </div>
-  <div id="msg" class="msg" role="status"></div>
 </div>`,
     DELETE_SCRIPT,
   );
