@@ -185,19 +185,6 @@ function SajuResult() {
 
         {tab === 'flow' && (
           <>
-        <Card>
-          <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>올해의 흐름</Text>
-            <Text style={styles.tag}>
-              {thisYear.label} · {thisYear.hangul}
-            </Text>
-          </View>
-          <Text style={styles.flowTitle}>{thisYear.title}</Text>
-          <Text style={styles.sectionBody}>{thisYear.body}</Text>
-          <Text style={[styles.sectionBody, { marginTop: 8 }]}>{thisYear.note}</Text>
-          <Text style={styles.footnote}>{thisYear.basis}</Text>
-        </Card>
-
         {thisMonth && thisWolun && (
           <Card>
             <View style={styles.rowBetween}>
@@ -214,6 +201,19 @@ function SajuResult() {
             </Text>
           </Card>
         )}
+
+        <Card>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>올해의 흐름</Text>
+            <Text style={styles.tag}>
+              {thisYear.label} · {thisYear.hangul}
+            </Text>
+          </View>
+          <Text style={styles.flowTitle}>{thisYear.title}</Text>
+          <Text style={styles.sectionBody}>{thisYear.body}</Text>
+          <Text style={[styles.sectionBody, { marginTop: 8 }]}>{thisYear.note}</Text>
+          <Text style={styles.footnote}>{thisYear.basis}</Text>
+        </Card>
 
         <Card>
           <View style={styles.rowBetween}>
