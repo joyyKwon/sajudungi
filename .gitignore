@@ -42,6 +42,9 @@ yarn-error.*
 mockups/*.html
 !mockups/*.dc.html
 
+# public site output (built and published by .github/workflows/pages.yml)
+/dist-site
+
 # generated native folders
 /ios
 /android
