@@ -14,18 +14,19 @@ const ok = (label: string, cond: boolean, extra?: unknown) => (cond ? pass++ : (
 
 const BANNED = ['죽', '사망', '이혼', '재앙', '불행', '질병', '파산', '망한', '저주', '큰일', '반드시', '절대'];
 const clean = (s: string) => !/undefined|NaN|null|\[object/.test(s) && !BANNED.some((w) => s.includes(w));
+const sentences = (s: string) => s.split(/(?<=[.요])\s+/).filter(Boolean).length;
 
 // Content
 const GODS = Object.keys(TEN_GODS);
 for (const [name, table] of [['PERSONALITY', PERSONALITY_BY_MONTH_GOD], ['LOVE', LOVE_BY_DAY_GOD]] as const) {
   for (const g of GODS) {
     const t = (table as Record<string, string>)[g];
-    ok(`${name} ${g}`, !!t && t.length >= 40 && clean(t), t);
+    ok(`${name} ${g}: 4+ sentences`, !!t && sentences(t) >= 4 && t.length >= 150 && clean(t), t);
   }
   ok(`${name} unique`, new Set(Object.values(table)).size === 10);
 }
 for (const g of GODS) ok(`LOVE ${g} names its 십신`, (LOVE_BY_DAY_GOD as Record<string, string>)[g].includes(g));
-for (const t of Object.values(WEALTH_BY_JAESEONG)) ok('WEALTH text', t.length >= 40 && clean(t), t);
+for (const t of Object.values(WEALTH_BY_JAESEONG)) ok('WEALTH text: 4+ sentences', sentences(t) >= 4 && t.length >= 150 && clean(t), t);
 ok('10 신살', Object.keys(SINSAL).length === 10);
 for (const [k, s] of Object.entries(SINSAL)) ok(`SINSAL ${k}`, s.name.length >= 2 && s.hanja.length >= 2 && s.title.length >= 4 && s.body.length >= 60 && clean(s.name + s.title + s.body), s);
 ok('SINSAL bodies unique', new Set(Object.values(SINSAL).map((s) => s.body)).size === 10);
@@ -58,6 +59,12 @@ ok('B wealth many', wealthDetail(B).text === WEALTH_BY_JAESEONG.many && wealthDe
 ok('A love 식신', loveDetail(A).text === LOVE_BY_DAY_GOD.식신);
 ok('B love 편재', loveDetail(B).text === LOVE_BY_DAY_GOD.편재);
 ok('C love 정인', loveDetail(C).text === LOVE_BY_DAY_GOD.정인);
+// Classical references: 월지/일지 seat plus the 십신 chapter; none when there is no 재성 to speak of.
+ok('A personality reference', personalityDetail(A).reference === '《연해자평》 論月令 "月為提綱" · 論兄弟姊妹 "比肩者，兄弟也"', personalityDetail(A).reference);
+ok('B personality reference names 正官論', personalityDetail(B).reference!.includes('正官論'));
+ok('love reference is the day-branch passage', loveDetail(A).reference === '《연해자평》 "日干為己身，日支為妻妾"');
+ok('A wealth (재성 0) has no reference', wealthDetail(A).reference === null);
+ok('B wealth reference', wealthDetail(B).reference === '《연해자평》 論正財 "財要得時，不要財多"');
 
 // 공망 agrees with lunar-javascript for all 60 pillars
 const GAN = '甲乙丙丁戊己庚辛壬癸';

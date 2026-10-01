@@ -333,6 +333,7 @@ function SajuResult() {
             <Text style={styles.sectionBody}>{d.base}</Text>
             <Text style={[styles.sectionBody, { marginTop: 8 }]}>{d.extra.text}</Text>
             <Text style={styles.footnote}>근거: {d.extra.basis}</Text>
+            {d.extra.reference && <Text style={[styles.footnote, { marginTop: 4 }]}>참고: {d.extra.reference}</Text>}
           </Card>
         ))}
 
