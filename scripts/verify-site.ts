@@ -44,6 +44,8 @@ ok('deletion page offers the in-app path too', del.includes('마이 &gt; 계정 
 ok('deletion page signs in three ways', ['loginForm', 'kakaoBtn', 'googleBtn'].every((id) => del.includes(`id="${id}"`)));
 ok('deletion page writes only deletion_requests', (del.match(/\.from\('([a-z_]+)'\)/g) ?? []).every((m) => m === ".from('deletion_requests')"));
 ok('deletion page does not keep a session', del.includes('persistSession: false'));
+ok('deletion page confirms inside the page, not with a browser dialog', !/[^a-zA-Z]confirm\(/.test(del) && del.includes('id="confirmBtn"') && del.includes('id="backBtn"'));
+ok('deletion page links back to the first page', del.includes('<a href="./">'));
 ok('config.js carries the public values', site['config.js'].includes(JSON.stringify({ url: config.supabaseUrl, key: config.supabasePublishableKey })));
 ok('no secret keys anywhere on the site', Object.values(site).every((c) => !/service_role|sb_secret_|eyJhbGciOi/.test(c)));
 

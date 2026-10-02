@@ -36,9 +36,10 @@ button:disabled { opacity: .5; cursor: default; }
 button.social { display:flex; align-items:center; justify-content:center; gap: 8px; }
 button.kakao { background:#FEE500; border-color:#FEE500; color: rgba(0,0,0,.85); }
 button.google { background:#FFFFFF; border: 1px solid #747775; color:#1F1F1F; }
-.msg { margin-top: 6px; font-size: 13px; color: var(--red); }
-.msg:empty { display: none; }
+/* The message line keeps its height when empty, so buttons don't jump when a message appears. */
+.msg { margin-top: 8px; font-size: 13px; line-height: 20px; min-height: 20px; color: var(--red); }
 .or { text-align:center; color: var(--soft); font-size: 12px; margin: 16px 0 4px; }
+.back { margin-top: 18px; font-size: 14px; }
 [hidden] { display: none !important; }
 footer { margin-top: 40px; color: var(--soft); font-size: 12px; }
 `;
@@ -114,12 +115,17 @@ const DELETE_SCRIPT = `<script src="https://cdn.jsdelivr.net/npm/@supabase/supab
   var user = null;
   var day = function (d) { return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; };
 
-  function render(session) {
-    user = session ? session.user : null;
-    say('');
+  // The two-step delete confirmation lives in the page rather than in a browser dialog,
+  // which some in-app browsers stop showing after the first time.
+  var asking = function (on) { $('askDelete').hidden = on; $('confirmDelete').hidden = !on; };
+
+  // Always draw from what the server says, never from what we assume just happened.
+  function refresh(after) {
     if (!user) { show('signedOut'); return; }
     $('who').textContent = user.email || '소셜 로그인 계정';
     sb.from('deletion_requests').select('requested_at').eq('user_id', user.id).maybeSingle().then(function (res) {
+      asking(false);
+      if (res.error) { show('signedIn'); say('상태를 확인하지 못했어요. 새로고침해주세요.'); return; }
       if (res.data) {
         var at = new Date(res.data.requested_at);
         $('when').textContent = day(at);
@@ -128,7 +134,14 @@ const DELETE_SCRIPT = `<script src="https://cdn.jsdelivr.net/npm/@supabase/supab
       } else {
         show('signedIn');
       }
+      if (after) after(!!res.data);
     });
+  }
+
+  function render(session) {
+    user = session ? session.user : null;
+    say('');
+    refresh();
   }
 
   sb.auth.onAuthStateChange(function (_event, session) { render(session); });
@@ -146,31 +159,36 @@ const DELETE_SCRIPT = `<script src="https://cdn.jsdelivr.net/npm/@supabase/supab
   var oauth = function (provider) {
     return function () {
       sb.auth.signInWithOAuth({ provider: provider, options: { redirectTo: location.origin + location.pathname } }).then(function (res) {
-        if (res.error) say('로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
+        if (res.error) say('로그인하지 못했어요. 다시 시도해주세요.');
       });
     };
   };
   $('kakaoBtn').addEventListener('click', oauth('kakao'));
   $('googleBtn').addEventListener('click', oauth('google'));
 
-  $('deleteBtn').addEventListener('click', function () {
-    if (!user || !confirm('계정 삭제를 요청할까요? 30일 뒤에 계정과 서버에 저장된 정보가 삭제돼요.')) return;
-    $('deleteBtn').disabled = true;
-    var requestedAt = new Date();
-    sb.from('deletion_requests').upsert({ user_id: user.id, requested_at: requestedAt.toISOString() }).then(function (res) {
-      $('deleteBtn').disabled = false;
-      if (res.error) { say('요청을 저장하지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
-      $('when').textContent = day(requestedAt);
-      $('purge').textContent = day(new Date(requestedAt.getTime() + 30 * 86400000));
-      show('requested');
+  $('deleteBtn').addEventListener('click', function () { say(''); asking(true); });
+  $('backBtn').addEventListener('click', function () { asking(false); });
+  $('confirmBtn').addEventListener('click', function () {
+    if (!user) return;
+    say('');
+    $('confirmBtn').disabled = true;
+    sb.from('deletion_requests').insert({ user_id: user.id, requested_at: new Date().toISOString() }).then(function (res) {
+      $('confirmBtn').disabled = false;
+      // 23505 = a request already exists, which is the state we wanted anyway.
+      var failed = res.error && res.error.code !== '23505';
+      refresh(function (requested) { if (failed || !requested) say('요청하지 못했어요. 다시 시도해주세요.'); });
     });
   });
   $('cancelBtn').addEventListener('click', function () {
     if (!user) return;
-    sb.from('deletion_requests').delete().eq('user_id', user.id).then(function (res) {
-      if (res.error) { say('취소하지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
-      show('signedIn');
-      say('삭제 요청을 취소했어요.', true); // not an error, so not in red
+    say('');
+    $('cancelBtn').disabled = true;
+    sb.from('deletion_requests').delete().eq('user_id', user.id).then(function () {
+      $('cancelBtn').disabled = false;
+      refresh(function (requested) {
+        if (requested) say('취소하지 못했어요. 다시 시도해주세요.');
+        else say('삭제 요청을 취소했어요.', true); // not an error, so not in red
+      });
     });
   });
   var signOut = function () { sb.auth.signOut(); };
@@ -213,8 +231,15 @@ const deleteAccount = () =>
   <div id="signedIn" hidden>
     <p><strong id="who"></strong> 계정으로 로그인했어요.</p>
     <div class="msg" role="status"></div>
-    <button id="deleteBtn" class="primary" type="button">계정 삭제 요청</button>
-    <button id="signOutBtn" type="button">로그아웃</button>
+    <div id="askDelete">
+      <button id="deleteBtn" class="primary" type="button">계정 삭제 요청</button>
+      <button id="signOutBtn" type="button">로그아웃</button>
+    </div>
+    <div id="confirmDelete" hidden>
+      <p>정말 삭제를 요청할까요? 30일 뒤에 계정과 서버에 저장된 정보가 삭제돼요.</p>
+      <button id="confirmBtn" class="primary" type="button">네, 삭제를 요청할게요</button>
+      <button id="backBtn" type="button">아니요</button>
+    </div>
   </div>
   <div id="requested" hidden>
     <p><strong>삭제 요청이 접수됐어요.</strong></p>
@@ -226,7 +251,8 @@ const deleteAccount = () =>
   <div id="unavailable" hidden>
     <p>지금은 이 페이지에서 요청을 받을 수 없어요. 앱의 마이 &gt; 계정 삭제를 이용해주세요.</p>
   </div>
-</div>`,
+</div>
+<p class="back"><a href="./">← 안내 페이지로 돌아가기</a></p>`,
     DELETE_SCRIPT,
   );
 
