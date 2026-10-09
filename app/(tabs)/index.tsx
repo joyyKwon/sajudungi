@@ -83,7 +83,7 @@ export default function Home() {
                 <Icon name={item.icon} size={22} color={item.disabled ? '#9a917f' : item.badge?.tone === 'new' ? '#8a2a12' : '#8a5a12'} />
               </View>
               <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.menuTitle}>{item.title}</Text>
                   <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
                 </View>
@@ -95,7 +95,8 @@ export default function Home() {
                   </View>
                 )}
               </View>
-              {!item.disabled && <Icon name="chevronRight" size={16} color="#cbbfae" />}
+              {/* Disabled rows keep the arrow's space so every badge lines up on the right. */}
+              {item.disabled ? <View style={{ width: 16 }} /> : <Icon name="chevronRight" size={16} color="#cbbfae" />}
             </Pressable>
           ))}
         </View>
