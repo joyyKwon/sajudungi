@@ -1,5 +1,6 @@
 export { colors } from './colors';
 export { fonts } from './typography';
+export { ELEMENT_FILL, ELEMENT_INK, elementBox, elementDot } from './elements';
 
 export const radius = {
   sm: 10,

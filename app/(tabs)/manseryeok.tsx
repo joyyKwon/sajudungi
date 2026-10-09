@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, radius, spacing, fonts } from '../../theme';
+import { ELEMENT_INK, colors, elementBox, elementDot, radius, spacing, fonts } from '../../theme';
 import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { Profile, useRequiredProfile, useSaju } from '../../context/ProfileContext';
@@ -18,43 +18,29 @@ import {
   WuXing,
   ZHI_ELEMENT,
   ZHI_MAIN_GAN,
+  elementCounts,
   sajuYearOf,
   tenGodOf,
   wolunOfYear,
 } from '../../lib/saju';
 import { FlowInfo, daeunFlow, monthFlow, yearFlow } from '../../lib/flow';
-import { interpretPillar } from '../../lib/interpret';
+import { ELEMENT_ORDER, interpretPillar } from '../../lib/interpret';
 import { describeBasis, formatBirthDate, formatTime } from '../../lib/format';
+import { ELEMENT_HANGUL } from '../../lib/sajuContent';
 
 type Pillar = {
   key: string;
   label: string;
   stem: string;
   branch: string;
-  stemColor: string;
-  branchColor: string;
+  stemElement: WuXing;
+  branchElement: WuXing;
   hangul: string;
   calcReason: string;
   interpretation: string;
 };
 
-const ELEMENT_COLOR: Record<WuXing, string> = {
-  wood: colors.wood,
-  fire: colors.fire,
-  earth: colors.earth,
-  metal: colors.metal,
-  water: colors.water,
-};
-
 const WOLUN_CHIP_WIDTH = 56;
-
-const ELEMENTS = [
-  { label: '목 · 성장', color: colors.wood },
-  { label: '화 · 열정', color: colors.fire },
-  { label: '토 · 안정', color: colors.earth },
-  { label: '금 · 결실', color: colors.metal },
-  { label: '수 · 지혜', color: colors.water },
-];
 
 function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
   const who = `${profile.name}님`;
@@ -64,8 +50,8 @@ function buildPillars(profile: Profile, saju: SajuResult): Pillar[] {
     label,
     stem: p.gan,
     branch: p.zhi,
-    stemColor: ELEMENT_COLOR[p.ganElement],
-    branchColor: ELEMENT_COLOR[p.zhiElement],
+    stemElement: p.ganElement,
+    branchElement: p.zhiElement,
     hangul: p.hangul,
     calcReason,
     interpretation: interpretPillar(saju, key),
@@ -111,8 +97,8 @@ const flowToUi = (info: FlowInfo, calcReason: string): Pillar => ({
   label: info.label,
   stem: info.ganZhi[0],
   branch: info.ganZhi[1],
-  stemColor: ELEMENT_COLOR[GAN_ELEMENT[info.ganZhi[0]]],
-  branchColor: ELEMENT_COLOR[ZHI_ELEMENT[info.ganZhi[1]]],
+  stemElement: GAN_ELEMENT[info.ganZhi[0]],
+  branchElement: ZHI_ELEMENT[info.ganZhi[1]],
   hangul: info.hangul,
   calcReason,
   interpretation: [`${info.godLabel} · ${info.title}`, info.body, info.note].join('\n\n'),
@@ -129,14 +115,14 @@ function buildSeun(saju: SajuResult, year: number): Pillar {
 /** A 간지 as two stacked, element-tinted boxes — a smaller version of the 원국 table's glyphs. */
 function GanZhiBoxes({ ganZhi }: { ganZhi: string }) {
   const parts = [
-    { ch: ganZhi[0], color: ELEMENT_COLOR[GAN_ELEMENT[ganZhi[0]]] },
-    { ch: ganZhi[1], color: ELEMENT_COLOR[ZHI_ELEMENT[ganZhi[1]]] },
+    { ch: ganZhi[0], element: GAN_ELEMENT[ganZhi[0]] },
+    { ch: ganZhi[1], element: ZHI_ELEMENT[ganZhi[1]] },
   ];
   return (
     <View style={styles.ganZhiBoxes}>
       {parts.map((p, i) => (
-        <View key={i} style={[styles.miniGlyph, { backgroundColor: p.color + '38' }]}>
-          <Text style={[styles.miniGlyphText, { color: p.color }]}>{p.ch}</Text>
+        <View key={i} style={[styles.miniGlyph, elementBox(p.element)]}>
+          <Text style={[styles.miniGlyphText, { color: ELEMENT_INK[p.element] }]}>{p.ch}</Text>
         </View>
       ))}
     </View>
@@ -173,6 +159,7 @@ function buildDaeun(saju: SajuResult, entry: DaeunEntry): Pillar {
 export default function Manseryeok() {
   const profile = useRequiredProfile();
   const saju = useSaju();
+  const counts = elementCounts(saju);
   const { content } = useContent();
   const [basisOpen, setBasisOpen] = useState(false);
   const pillars = useMemo(() => buildPillars(profile, saju), [profile, saju, content]);
@@ -249,11 +236,11 @@ export default function Manseryeok() {
               return (
                 <Pressable key={p.key} onPress={() => openSheet(p)} style={[styles.pillarCell, isSelected && styles.pillarCellActive]}>
                   <Text style={[styles.pillarLabel, isSelected && { color: colors.red, fontWeight: '700' }]}>{p.label}</Text>
-                  <View style={[styles.glyph, { backgroundColor: p.stemColor + '38' }]}>
-                    <Text style={[styles.glyphText, { color: p.stemColor }]}>{p.stem}</Text>
+                  <View style={[styles.glyph, elementBox(p.stemElement)]}>
+                    <Text style={[styles.glyphText, { color: ELEMENT_INK[p.stemElement] }]}>{p.stem}</Text>
                   </View>
-                  <View style={[styles.glyph, { backgroundColor: p.branchColor + '38' }]}>
-                    <Text style={[styles.glyphText, { color: p.branchColor }]}>{p.branch}</Text>
+                  <View style={[styles.glyph, elementBox(p.branchElement)]}>
+                    <Text style={[styles.glyphText, { color: ELEMENT_INK[p.branchElement] }]}>{p.branch}</Text>
                   </View>
                   <Text style={[styles.pillarHangul, isSelected && { color: colors.red, fontWeight: '700' }]}>{p.hangul}</Text>
                 </Pressable>
@@ -272,15 +259,14 @@ export default function Manseryeok() {
               </View>
             )}
           </View>
-        </View>
-
-        <View style={styles.elementsCard}>
-          <Mascot pose="elements" width={88} />
-          <View style={{ gap: 5 }}>
-            {ELEMENTS.map((e) => (
-              <View key={e.label} style={styles.elementRow}>
-                <View style={[styles.dot, { backgroundColor: e.color }]} />
-                <Text style={styles.elementLabel}>{e.label}</Text>
+          {/* A quiet count of each 오행 in the chart, doubling as the color legend for the cells above. */}
+          <View style={styles.elementLine}>
+            {ELEMENT_ORDER.map((e) => (
+              <View key={e} style={styles.elementItem}>
+                <View style={[styles.dot, elementDot(e), !counts[e] && { opacity: 0.35 }]} />
+                <Text style={[styles.elementLabel, !counts[e] && { color: colors.inkFaint }]}>
+                  {ELEMENT_HANGUL[e]} {counts[e]}
+                </Text>
               </View>
             ))}
           </View>
@@ -404,9 +390,9 @@ const styles = StyleSheet.create({
   glyph: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   glyphText: { fontFamily: fonts.display, fontSize: 18, fontWeight: '700' },
   pillarHangul: { fontFamily: fonts.body, fontSize: 10.5, color: colors.inkSoft },
-  elementsCard: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.amberSoft, borderRadius: radius.lg, padding: 12 },
-  elementRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
+  elementLine: { flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 10 },
+  elementItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
   elementLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.inkSoft },
   cycleRow: { flexDirection: 'row', gap: 8, paddingBottom: 4 },
   cycleChip: { minWidth: 56, alignItems: 'center', paddingVertical: 10, paddingHorizontal: 6, borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line },

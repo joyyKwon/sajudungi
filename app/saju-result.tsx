@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, ScrollView, Share, useWindowDimensio
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router } from 'expo-router';
-import { colors, radius, spacing, fonts } from '../theme';
+import { ELEMENT_FILL, ELEMENT_INK, colors, elementBox, radius, spacing, fonts } from '../theme';
 import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
@@ -22,14 +22,6 @@ import { POSITION_PILLAR_LABEL, POSITION_ZHI_LABEL, SinsalHit, sinsalOf } from '
 import type { SinsalKey } from '../lib/content/sinsal';
 import { JohuStem, johuOf } from '../lib/johu';
 import { careerOf } from '../lib/career';
-
-const ELEMENT_COLOR = {
-  wood: colors.wood,
-  fire: colors.fire,
-  earth: colors.earth,
-  metal: colors.metal,
-  water: colors.water,
-} as const;
 
 // The cards are grouped into tabs only at render time, so the grouping can change
 // (or go back to one long page) without touching the cards themselves.
@@ -59,10 +51,10 @@ function FlowHeading({ title, term }: { title: string; term: string }) {
 }
 
 function StemBadge({ gan, size }: { gan: string; size: number }) {
-  const color = ELEMENT_COLOR[GAN_ELEMENT[gan]];
+  const element = GAN_ELEMENT[gan];
   return (
-    <View style={[styles.stemBadge, { width: size, height: size, borderRadius: size / 4, backgroundColor: color + '38' }]}>
-      <Text style={[styles.stemBadgeText, { color, fontSize: size * 0.5 }]}>{gan}</Text>
+    <View style={[styles.stemBadge, { width: size, height: size, borderRadius: size / 4 }, elementBox(element)]}>
+      <Text style={[styles.stemBadgeText, { color: ELEMENT_INK[element], fontSize: size * 0.5 }]}>{gan}</Text>
     </View>
   );
 }
@@ -261,7 +253,7 @@ function SajuResult() {
                 <View key={el} style={styles.barRow}>
                   <Text style={styles.barLabel}>{ELEMENT_HANJA[el]}</Text>
                   <View style={styles.barTrack}>
-                    <View style={[styles.barFill, { width: `${(counts[el] / maxCount) * 100}%`, backgroundColor: ELEMENT_COLOR[el] }]} />
+                    <View style={[styles.barFill, { width: `${(counts[el] / maxCount) * 100}%`, backgroundColor: ELEMENT_FILL[el] }]} />
                   </View>
                   <Text style={styles.barCount}>{counts[el]}</Text>
                 </View>

@@ -14,8 +14,10 @@ export const colors = {
   wood: '#4F9A6B',
   fire: '#C0432A',
   earth: '#B98A3F',
-  metal: '#9A9A9A',
-  water: '#3C5A78',
+  // 금 is the 오방색 white: its glyphs sit in white boxes with this gray as text and outline (see theme/elements.ts).
+  metal: '#8C8C8C',
+  metalLine: '#CFCFCF',
+  water: '#3A6EA8',
 } as const;
 
 export type ColorToken = keyof typeof colors;
