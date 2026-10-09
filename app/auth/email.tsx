@@ -11,7 +11,9 @@ import { useAuth } from '../../context/AuthContext';
 const MIN_PASSWORD_LENGTH = 8;
 
 export default function EmailAuthScreen() {
-  const { signInWithEmail, signUpWithEmail, busy } = useAuth();
+  const { signInWithEmail, signUpWithEmail, hasProfileAfterLogin, busy } = useAuth();
+  // After signing in, an account with nothing saved yet goes straight to entering 내 정보.
+  const goOn = async () => router.replace((await hasProfileAfterLogin()) ? '/(tabs)' : '/info-input');
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +26,7 @@ export default function EmailAuthScreen() {
     if (mode === 'signin') {
       const { error } = await signInWithEmail(trimmed, password);
       if (error) return Alert.alert('로그인할 수 없어요', translateError(error));
-      router.replace('/(tabs)');
+      await goOn();
     } else {
       const { error, needsEmailConfirmation } = await signUpWithEmail(trimmed, password);
       if (error) return Alert.alert('가입할 수 없어요', translateError(error));
@@ -33,7 +35,7 @@ export default function EmailAuthScreen() {
           { text: '확인', onPress: () => goBackOrHome() },
         ]);
       } else {
-        router.replace('/(tabs)');
+        await goOn();
       }
     }
   };

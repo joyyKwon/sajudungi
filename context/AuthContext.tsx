@@ -3,6 +3,7 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { SocialPrefill, socialPrefillOf } from '../lib/socialPrefill';
 // mergePeopleOnLogin/mergeProgressOnLogin are pure logic (lib/syncMerge.ts) re-exported from here.
 import { fetchRemotePeople, fetchRemoteProgress, mergePeopleOnLogin, mergeProgressOnLogin, pushAllPeople, pushProgress } from '../lib/sync';
 import { useProfile } from './ProfileContext';
@@ -14,10 +15,15 @@ type AuthContextValue = {
   /** null when browsing as a guest. */
   session: Session | null;
   email: string | null;
+  /** What the login provider shared (name, and gender/birth date if sent) to prefill 내 정보 on first input. */
+  socialPrefill: SocialPrefill;
   /** True once the stored session (if any) has been checked. */
   ready: boolean;
   /** True while a login/signup/merge is in flight, so screens can show a spinner and avoid double-submits. */
   busy: boolean;
+  /** Call right after a login succeeds: waits for the server backup to be merged in and
+   *  says whether this account now has a 내 사주 (go to the tabs) or not (go enter one). */
+  hasProfileAfterLogin: () => Promise<boolean>;
   /** `needsEmailConfirmation` is true when the project requires clicking a confirmation email before the account is usable. */
   signUpWithEmail: (email: string, password: string) => Promise<AuthResult & { needsEmailConfirmation: boolean }>;
   signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
@@ -77,6 +83,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // merge), so the push-on-change effects below don't immediately re-push what was just pulled.
   const applyingRemoteRef = useRef(false);
 
+  // The user whose login merge has finished. Pushing mirrors this device onto the server
+  // (deleting rows the device doesn't have), so it must wait until the server's copy has been
+  // merged in — otherwise logging in on an empty device would erase the backup.
+  const syncedUserRef = useRef<string | null>(null);
+  const reconcilingRef = useRef<string | null>(null);
+  const reconcileRunRef = useRef<Promise<boolean> | null>(null);
+
   useEffect(() => {
     let alive = true;
     supabase.auth.getSession().then(({ data }) => {
@@ -90,9 +103,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setInRecovery(true);
         return; // a recovery session is not a normal login: don't run the people/progress sync
       }
+      if (event === 'SIGNED_OUT') {
+        syncedUserRef.current = null;
+        setInRecovery(false);
+      }
       setSession(next);
-      if (event === 'SIGNED_IN' && next) void reconcileOnLogin(next.user.id);
-      if (event === 'SIGNED_OUT') setInRecovery(false);
+      // INITIAL_SESSION covers an app start with a saved login, which also needs the merge.
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && next) void reconcileOnLogin(next.user.id);
     });
     return () => {
       alive = false;
@@ -101,34 +118,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function reconcileOnLogin(userId: string) {
+  /** Merges the server backup into this device once per login; resolves to whether a 내 사주 exists. */
+  function reconcileOnLogin(userId: string): Promise<boolean> {
+    if (syncedUserRef.current === userId) return Promise.resolve(peopleRef.current.some((p) => p.isSelf));
+    if (reconcilingRef.current === userId && reconcileRunRef.current) return reconcileRunRef.current;
+    reconcilingRef.current = userId;
     setBusy(true);
-    try {
-      await supabase.from('deletion_requests').delete().eq('user_id', userId); // logging back in cancels a pending 계정 삭제
-      const [remotePeople, remoteProgress] = await Promise.all([fetchRemotePeople(userId), fetchRemoteProgress(userId)]);
-      const mergedPeople = mergePeopleOnLogin(peopleRef.current, remotePeople);
-      const mergedProgress = mergeProgressOnLogin(completedRef.current, remoteProgress);
+    const run = (async () => {
+      try {
+        await supabase.from('deletion_requests').delete().eq('user_id', userId); // logging back in cancels a pending 계정 삭제
+        const [remotePeople, remoteProgress] = await Promise.all([fetchRemotePeople(userId), fetchRemoteProgress(userId)]);
+        const mergedPeople = mergePeopleOnLogin(peopleRef.current, remotePeople);
+        const mergedProgress = mergeProgressOnLogin(completedRef.current, remoteProgress);
 
-      applyingRemoteRef.current = true;
-      replaceAllPeople(mergedPeople);
-      replaceCompleted(mergedProgress);
-      applyingRemoteRef.current = false;
+        applyingRemoteRef.current = true;
+        replaceAllPeople(mergedPeople);
+        replaceCompleted(mergedProgress);
+        applyingRemoteRef.current = false;
 
-      await Promise.all([pushAllPeople(userId, mergedPeople), pushProgress(userId, mergedProgress)]);
-    } finally {
-      setBusy(false);
-    }
+        await Promise.all([pushAllPeople(userId, mergedPeople), pushProgress(userId, mergedProgress)]);
+        syncedUserRef.current = userId;
+        return mergedPeople.some((p) => p.isSelf);
+      } catch {
+        // Offline or the server failed: keep using this device's data; pushing stays off until a later merge succeeds.
+        return peopleRef.current.some((p) => p.isSelf);
+      } finally {
+        reconcilingRef.current = null;
+        reconcileRunRef.current = null;
+        setBusy(false);
+      }
+    })();
+    reconcileRunRef.current = run;
+    return run;
   }
 
   // Mirrors later local edits to the server while logged in.
   useEffect(() => {
-    if (!session || applyingRemoteRef.current) return;
+    if (!session || applyingRemoteRef.current || syncedUserRef.current !== session.user.id) return;
     void pushAllPeople(session.user.id, people);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [people, session?.user.id]);
 
   useEffect(() => {
-    if (!session || applyingRemoteRef.current) return;
+    if (!session || applyingRemoteRef.current || syncedUserRef.current !== session.user.id) return;
     void pushProgress(session.user.id, completed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed, session?.user.id]);
@@ -137,6 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       session,
       email: session?.user.email ?? null,
+      socialPrefill: socialPrefillOf(session?.user.user_metadata),
       ready,
       busy,
       inRecovery,
@@ -151,6 +184,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         setBusy(false);
         return { error: error?.message ?? null };
+      },
+      hasProfileAfterLogin: async () => {
+        const { data } = await supabase.auth.getSession();
+        return data.session ? reconcileOnLogin(data.session.user.id) : peopleRef.current.some((p) => p.isSelf);
       },
       signOut: async (wipeDevice) => {
         await supabase.auth.signOut();

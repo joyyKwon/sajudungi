@@ -19,7 +19,7 @@ const notYet = (provider: string) =>
   ]);
 
 export function LoginOptions() {
-  const { signInWithProvider } = useAuth();
+  const { signInWithProvider, hasProfileAfterLogin } = useAuth();
   const [loading, setLoading] = useState<'kakao' | 'google' | null>(null);
 
   const withProvider = async (provider: 'kakao' | 'google') => {
@@ -27,7 +27,8 @@ export function LoginOptions() {
     try {
       const { error } = await signInWithProvider(provider);
       if (error) Alert.alert('로그인할 수 없어요', error);
-      else router.replace('/(tabs)');
+      // An account with nothing saved yet goes straight to entering 내 정보.
+      else router.replace((await hasProfileAfterLogin()) ? '/(tabs)' : '/info-input');
     } finally {
       setLoading(null);
     }

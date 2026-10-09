@@ -7,6 +7,7 @@ import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { useProfile } from '../../context/ProfileContext';
+import { useAuth } from '../../context/AuthContext';
 import { Person, Relation, RELATIONS, SortMode, groupPeople, relationCounts } from '../../lib/people';
 import { shortBirthDate, summarizePerson } from '../../lib/personSummary';
 
@@ -14,6 +15,7 @@ const SORT_LABEL: Record<SortMode, string> = { recent: '최근 본 순', name: '
 
 export default function PeopleScreen() {
   const { people, me, activeId, options, setActive, toggleFavorite, removePerson } = useProfile();
+  const { session } = useAuth();
   const [query, setQuery] = useState('');
   const [relation, setRelation] = useState<Relation | null>(null);
   const [sort, setSort] = useState<SortMode>('recent');
@@ -32,7 +34,7 @@ export default function PeopleScreen() {
   };
   const edit = (p: Person) => (p.isSelf ? router.push('/info-input') : router.push({ pathname: '/info-input', params: { id: p.id } }));
   const confirmRemove = (p: Person) =>
-    Alert.alert(`${p.name}님을 삭제할까요?`, '저장된 정보와 메모가 이 기기에서 삭제돼요. 되돌릴 수 없어요.', [
+    Alert.alert(`${p.name}님을 삭제할까요?`, session ? '저장된 정보와 메모가 이 기기와 계정에서 모두 삭제돼요. 되돌릴 수 없어요.' : '저장된 정보와 메모가 이 기기에서 삭제돼요. 되돌릴 수 없어요.', [
       { text: '취소', style: 'cancel' },
       { text: '삭제', style: 'destructive', onPress: () => removePerson(p.id) },
     ]);

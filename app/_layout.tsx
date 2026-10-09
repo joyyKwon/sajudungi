@@ -67,6 +67,9 @@ function AppShell() {
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="saju-result" options={{ presentation: 'card' }} />
+      {/* Reaching the start screen by replacing a screen (a "back" with no history) should
+          slide like going back, not like opening a new screen. */}
+      <Stack.Screen name="welcome" options={{ animationTypeForReplace: 'pop' }} />
     </Stack>
   );
 }

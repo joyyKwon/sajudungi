@@ -8,6 +8,7 @@ import { Icon } from '../components/Icon';
 import { Mascot } from '../components/Mascot';
 import { DateTimePickerSheet } from '../components/DateTimePickerSheet';
 import { PersonInput, useProfile } from '../context/ProfileContext';
+import { useAuth } from '../context/AuthContext';
 import type { Gender, CalendarType } from '../lib/saju';
 import { formatBirthDate, formatTime } from '../lib/format';
 import { validateLunarDate } from '../lib/lunar';
@@ -24,18 +25,23 @@ export default function InfoInput() {
   // One form for four jobs: first input of "나", editing "나", adding someone, editing someone.
   const { id, add } = useLocalSearchParams<{ id?: string; add?: string }>();
   const { me, people, setProfile, addPerson, updatePerson } = useProfile();
+  const { session, signOut, socialPrefill } = useAuth();
   const found = id ? people.find((p) => p.id === id) ?? null : null;
   const mode: 'first' | 'self' | 'add' | 'edit' =
     add === '1' || (id && !found) ? 'add' : found ? (found.isSelf ? 'self' : 'edit') : me ? 'self' : 'first';
   const profile = mode === 'edit' ? found : mode === 'self' ? found ?? me : null;
   const forOther = mode === 'add' || mode === 'edit';
-  const [name, setName] = useState(profile?.name ?? '');
-  const [birthDate, setBirthDate] = useState<Date | null>(profile ? new Date(profile.year, profile.month - 1, profile.day) : null);
+  // 처음 내 정보를 넣을 때는 로그인 수단이 알려준 정보(이름, 보내준다면 성별·생년월일)를 미리 채운다. 모두 바꿀 수 있다.
+  const prefill = mode === 'first' ? socialPrefill : {};
+  const [name, setName] = useState(profile?.name ?? prefill.name?.slice(0, NAME_MAX_LENGTH) ?? '');
+  const [birthDate, setBirthDate] = useState<Date | null>(
+    profile ? new Date(profile.year, profile.month - 1, profile.day) : prefill.birth ? new Date(prefill.birth.year, prefill.birth.month - 1, prefill.birth.day) : null,
+  );
   const [birthTime, setBirthTime] = useState<Date | null>(
     profile && profile.hour !== null ? new Date(2000, 0, 1, profile.hour, profile.minute ?? 0) : null,
   );
   const [picker, setPicker] = useState<'date' | 'time' | null>(null);
-  const [gender, setGender] = useState<Gender>(profile?.gender ?? 'female');
+  const [gender, setGender] = useState<Gender>(profile?.gender ?? prefill.gender ?? 'female');
   const [calendarType, setCalendarType] = useState<CalendarType>(profile?.calendarType ?? 'solar');
   const [timeUnknown, setTimeUnknown] = useState(profile ? profile.hour === null : false);
   const [isLeapMonth, setIsLeapMonth] = useState(profile?.isLeapMonth ?? false);
@@ -44,10 +50,22 @@ export default function InfoInput() {
   const [agreedAge, setAgreedAge] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
 
+  // Opened with no history (cold start, or sent here after signing in to an account that has
+  // nothing saved): the start screen would forward a signed-in user straight back here, so
+  // the only way out is to sign out.
+  const goBack = () => {
+    if (router.canGoBack()) return router.back();
+    if (!session) return router.replace('/welcome');
+    Alert.alert('로그아웃할까요?', '내 정보를 입력하지 않고 나가려면 로그아웃해야 해요. 다른 방법으로 다시 시작할 수 있어요.', [
+      { text: '계속 입력하기', style: 'cancel' },
+      { text: '로그아웃', onPress: () => signOut(false).then(() => router.replace('/welcome')) },
+    ]);
+  };
+
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.topbar}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={goBack} hitSlop={12}>
           <Icon name="back" size={22} color={colors.ink} />
         </Pressable>
         <Text style={styles.topbarTitle}>{TITLE[mode]}</Text>
@@ -192,7 +210,8 @@ export default function InfoInput() {
                 에 동의해요
               </Text>
             </View>
-            <Text style={styles.fieldHint}>입력한 정보는 이 기기에만 저장되고 서버로 보내지 않아요.</Text>
+            {/* 비회원에게만: 서버로 보내지 않는다는 건 알려줄 만한 장점이다. 회원의 서버 저장은 개인정보처리방침에 있다. */}
+            {!session && <Text style={styles.fieldHint}>입력한 정보는 이 기기에만 저장돼요.</Text>}
           </View>
         )}
       </ScrollView>
@@ -224,7 +243,6 @@ export default function InfoInput() {
               if (problem) return Alert.alert('올바르지 않은 날짜예요', problem);
             }
 
-            // MOCK: everything is stored on-device only (AsyncStorage). Sync to Supabase once accounts exist.
             if (mode === 'add') {
               addPerson(next);
               router.back();
