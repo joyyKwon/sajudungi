@@ -6,13 +6,13 @@
 //      analytics, crash reports, payments, ...).
 // Bump LEGAL_VERSION on every substantive change.
 
-export const LEGAL_VERSION = '2026-10-draft-5';
+export const LEGAL_VERSION = '2026-11-draft-6';
 
 export const LEGAL_CONFIG = {
   serviceName: '사주둥이',
-  operatorName: '[운영자명 입력 필요]',
-  contactEmail: '[문의 이메일 입력 필요]',
-  privacyOfficer: '[개인정보 보호책임자 입력 필요]',
+  operatorName: 'joy',
+  contactEmail: 'joyyy.ground@gmail.com',
+  privacyOfficer: '사주둥이 개인정보 보호 담당',
   effectiveDate: '[시행일 입력 필요]',
 };
 
@@ -222,6 +222,7 @@ const PRIVACY: LegalDoc = {
         '· 2026-09-draft-3: 로그인·회원가입, 서버 저장(사주 목록·학습 진도), 처리위탁·국외이전(Supabase), 계정 삭제(30일 유예) 항목 추가',
         '· 2026-10-draft-4: 카카오·구글 로그인 때 제공받는 정보(닉네임·이름, 프로필 사진) 명시',
         '· 2026-10-draft-5: 카카오·구글로부터 제공받는 정보의 출처·근거 명시, 닉네임(이름)을 내 정보 이름 칸의 기본값으로 사용',
+        '· 2026-11-draft-6: 운영자, 개인정보 보호책임자, 문의처 기재',
       ],
     },
   ],
