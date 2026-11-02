@@ -110,7 +110,7 @@ export default function MyPage() {
         <View style={styles.list}>
           <Row label="서비스 이용 안내" onPress={() => router.push('/legal/notice')} />
           <Row label="이용약관" onPress={() => router.push('/legal/terms')} />
-          <Row label="개인정보처리방침" onPress={() => router.push('/legal/privacy')} />
+          <Row label="개인정보 처리방침" onPress={() => router.push('/legal/privacy')} />
           <Row label="내 정보 삭제" onPress={confirmDelete} last />
         </View>
 

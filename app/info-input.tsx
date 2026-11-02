@@ -203,15 +203,18 @@ export default function InfoInput() {
                 <Text style={styles.consentLink} onPress={() => router.push('/legal/terms')}>
                   이용약관
                 </Text>
-                과{' '}
-                <Text style={styles.consentLink} onPress={() => router.push('/legal/privacy')}>
-                  개인정보처리방침
-                </Text>
                 에 동의해요
               </Text>
             </View>
-            {/* 비회원에게만: 서버로 보내지 않는다는 건 알려줄 만한 장점이다. 회원의 서버 저장은 개인정보처리방침에 있다. */}
-            {!session && <Text style={styles.fieldHint}>입력한 정보는 이 기기에만 저장돼요.</Text>}
+            {/* 개인정보는 계약 이행(서비스 제공)에 필요한 만큼만 처리하므로 동의가 아니라 안내로 알린다
+                (2024.9. 시행령 개정, 처리방침 작성지침 2026.4.). */}
+            <Text style={styles.fieldHint}>
+              입력한 정보는{' '}
+              <Text style={styles.consentLink} onPress={() => router.push('/legal/privacy')}>
+                개인정보 처리방침
+              </Text>
+              에 따라 처리해요.{!session && ' 로그인하지 않으면 이 기기에만 저장돼요.'}
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -223,7 +226,7 @@ export default function InfoInput() {
             if (!name.trim()) return Alert.alert(forOther ? '이름(별명)을 입력해주세요' : '이름(닉네임)을 입력해주세요');
             if (!birthDate) return Alert.alert('생년월일을 선택해주세요');
             if (!timeUnknown && !birthTime) return Alert.alert('태어난 시간을 선택하거나 "몰라요"를 체크해주세요');
-            if (mode === 'first' && !(agreedAge && agreedTerms)) return Alert.alert('필수 항목에 동의해주세요', '만 14세 이상 확인과 이용약관·개인정보처리방침 동의가 필요해요.');
+            if (mode === 'first' && !(agreedAge && agreedTerms)) return Alert.alert('필수 항목에 동의해주세요', '만 14세 이상 확인과 이용약관 동의가 필요해요.');
 
             const next: PersonInput = {
               name: name.trim(),

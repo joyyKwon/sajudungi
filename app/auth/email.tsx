@@ -96,11 +96,11 @@ export default function EmailAuthScreen() {
             <Text style={styles.link} onPress={() => router.push('/legal/terms')}>
               이용약관
             </Text>
-            과{' '}
+            에 동의하는 것으로 볼게요. 개인정보는{' '}
             <Text style={styles.link} onPress={() => router.push('/legal/privacy')}>
-              개인정보처리방침
+              개인정보 처리방침
             </Text>
-            에 동의하는 것으로 볼게요.
+            에 따라 처리해요.
           </Text>
         )}
       </ScrollView>

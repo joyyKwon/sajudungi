@@ -40,7 +40,7 @@ export default function Onboarding() {
             </Text>
             과{' '}
             <Text style={styles.link} onPress={() => router.push('/legal/privacy')}>
-              개인정보처리방침
+              개인정보 처리방침
             </Text>
             을 확인해주세요
           </Text>

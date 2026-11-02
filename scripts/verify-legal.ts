@@ -49,7 +49,8 @@ ok('privacy sections numbered in order', nums.every((n, i) => n === i + 1), nums
 // Files allowed to talk to Supabase at all: the client itself, the content loader (읽기 전용,
 // see below), and the two files that implement login/sync (§1-4 of the privacy policy).
 const SUPABASE_FILES = ['lib/contentRemote.ts', 'lib/sync.ts', 'lib/syncMerge.ts', 'context/AuthContext.tsx'];
-const supabaseUses = files.filter((f) => f.src.includes('supabase') && !f.path.endsWith('lib/supabase.ts'));
+// lib/legal.ts is the policy text itself (it links to supabase.com), not code that talks to Supabase.
+const supabaseUses = files.filter((f) => f.src.includes('supabase') && !f.path.endsWith('lib/supabase.ts') && !f.path.endsWith('lib/legal.ts'));
 ok(
   'supabase is only used by the content loader and the login/sync files named in the privacy policy',
   supabaseUses.every((f) => SUPABASE_FILES.some((allowed) => f.path.endsWith(allowed))),
