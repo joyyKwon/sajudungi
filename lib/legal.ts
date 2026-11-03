@@ -6,14 +6,14 @@
 //      analytics, crash reports, payments, ...).
 // Bump LEGAL_VERSION on every substantive change.
 
-export const LEGAL_VERSION = '2026-11-draft-8';
+export const LEGAL_VERSION = '2026-11-03';
 
 export const LEGAL_CONFIG = {
   serviceName: '사주둥이',
   operatorName: 'joy',
   contactEmail: 'joyyy.ground@gmail.com',
   privacyOfficer: '사주둥이 개인정보 보호 담당',
-  effectiveDate: '[시행일 입력 필요]',
+  effectiveDate: '2026년 11월 3일',
 };
 
 export type LegalSection = { heading: string; body: string[] };
